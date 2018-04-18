@@ -1,7 +1,6 @@
 
 #Alex Holcombe alex.holcombe@sydney.edu.au
-#See the README.md for more information: https://github.com/alexholcombe/attentional-blink/blob/master/README.md
-#git remote add origin https://github.com/alexholcombe/nStream
+#See the README.md for more information: https://github.com/alexholcombe/Humby3streams
 from __future__ import print_function, division
 from psychopy import monitors, visual, event, data, logging, core, sound, gui
 import psychopy.info
@@ -322,7 +321,6 @@ You must not move your eyes from the fixation point while these sequences are pl
 
 One of the letters will appear with a white ring around it.Your job is to tell us which of the letters appeared within the white ring. Again, you must not move your eyes from the fixation point in the centre of the screen while the letter streams are shown.
 
-Press space to read more instructions
 """
 
 instructionText2 ="""
@@ -347,7 +345,7 @@ possibleCueTemporalPositions =  np.array([6,7,8,9,10])
 tasks=['T1','T1T2','T1T2T3','allCued','oneCued']
 numResponsesWanted=1; maxNumRespsWanted=2
 numRings = 1 
-streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header can work out the maximum value
+streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
     for task in [ tasks[2] ]:  
        if task=='T1T2':

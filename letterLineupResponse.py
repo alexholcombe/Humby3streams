@@ -299,17 +299,20 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
     passThisTrial = False
     myMouse = event.Mouse()
 
-    #Do horizontal lineups
-    responseDebug=False; responses = list(); responsesAutopilot = list();
-    expStop = False
-    bothSides = False
-    leftRightCentral = 2 #central
-    expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                doLineup(myWin, bgColor, myMouse, clickSound, badClickSound, possibleResps, bothSides, leftRightCentral, autopilot)
-
-    #print('autopilot=',autopilot, 'responses=',responses)
-    #print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
+    testHorizontalLineup = False
+    if testHorizontalLineup:
+        #Do horizontal lineups
+        responseDebug=False; responses = list(); responsesAutopilot = list();
+        expStop = False
+        bothSides = False
+        leftRightCentral = 2 #central
+        expStop,passThisTrial,responses,buttons,responsesAutopilot = \
+                    doLineup(myWin, bgColor, myMouse, clickSound, badClickSound, possibleResps, bothSides, leftRightCentral, autopilot)
     
+        #print('autopilot=',autopilot, 'responses=',responses)
+        #print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
+        
+        
     #Do vertical lineups
     responseDebug=False; responses = list(); responsesAutopilot = list();
     expStop = False
