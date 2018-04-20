@@ -362,23 +362,13 @@ for streamsPerRing in streamsPerRingPossibilities:
        print('task=',task)
        #setting targetLeftRightIfOne constant because which stream randomisation taken care of by baseAngle. Stream0 will always be the one cued, but it'll be in a random position
        for targetLeftRightIfOne in  ['right']: # ['left','right']: #If single target, should it be on the left or the right?
-        anglesMustBeMultipleOf =  int( round(360 / max(streamsPerRingPossibilities) ) )
         randomlyAssignCuesToStreams = True
-        for baseAngleCWfromEast in range(0,360,anglesMustBeMultipleOf): #cued stream will always be stream0. Its position is randomized by baseAngleCWfromEast
          for cueTemporalPos in possibleCueTemporalPositions:
           for firstRespLRifTwo in ['left','right']:  #If dual target and lineup response, should left one or right one be queried first?
-#            if streamsPerRing == max(streamsPerRingPossibilities): 
-#                baseAngleCWfromEast = 0
-#            else: #change base angle so that in the 2 streams condition, they equally often occupy each of the possible angles of the nStreams condition
-#                baseAngleCWfromEast= random.random()*360
-#                #round baseAngle to the nearest multiple of 360/max(streamsPerRingPossibilities)
-#                anglesMustBeMultipleOf = 360/max(streamsPerRingPossibilities)
-#                baseAngleCWfromEast = roundToNearestY(baseAngleCWfromEast, anglesMustBeMultipleOf)
             #Don't even try to counterbalance response order in Jen's experiment, because 3 possible first values for 3 targets and 6 orders and also two for two targets
             stimListDualStream.append(         
                  {'numRings':numRings, 'streamsPerRing':streamsPerRing, 'numRespsWanted':numResponsesWanted, 'task':task, 'targetLeftRightIfOne':targetLeftRightIfOne, 
-                    'cue0temporalPos':cueTemporalPos, 'firstRespLRifTwo': firstRespLRifTwo, 'cue1lag':0,'numToCue':numToCue,
-                    'baseAngleCWfromEast':baseAngleCWfromEast} 
+                    'cue0temporalPos':cueTemporalPos, 'firstRespLRifTwo': firstRespLRifTwo, 'cue1lag':0,'numToCue':numToCue} 
               )  #cue1lag = 0, meaning simultaneous targets
 
 trialsPerConditionDualStream = 2
@@ -434,27 +424,16 @@ print('timingBlips',file=dataFile)
 #end of header
 
             
-def calcStreamPos(numRings,streamsPerRing,baseAngleCWfromEast,cueOffsets,streami,streamOrNoise):
+def calcStreamPos(numStreams, streami, cueOffsets):
     #streamOrNoise because noise coordinates have to be in deg, stream in pix
     #cueOffsets are in deg, for instance indicating the eccentricity of the streams/cues
     noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
+    middle = len(numStreams)/2 - .5
+    eccentricity = cueOffsets[abs(streami - middle)]
+    sign = (streami - middle)/abs(streami - middle)
+    eccentricity = sign * eccentricity
+    pos = (eccentricity,0)
 
-    thisRingNum =  int( streami / streamsPerRing )
-    ringStreami = streami % streamsPerRing
-    
-    if streamsPerRing ==0:
-        pos = np.array([0,0])
-    else:
-            #assume want them evenly spaced, counterclockwise starting from directly east
-            halfAngle = 360/streamsPerRing/2.0
-            thisRingAngleOffset = (thisRingNum % 2) * halfAngle #offset odd-numbered rings by half the angle
-            thisAngle = baseAngleCWfromEast + ringStreami/streamsPerRing * 360 + thisRingAngleOffset
-            x = cueOffsets[thisRingNum]*cos(thisAngle/180*pi)
-            y = cueOffsets[thisRingNum]*sin(thisAngle/180*pi)
-            pos = np.array([x,y])
-        
-    if streamOrNoise:  #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg
-        pos *= noiseOffsetKludge*pixelperdegree
         
     #pos = np.round(pos) #rounding or integer is a bad idea. Then for small radii, not equally spaced
     #pos = pos.astype(int)
@@ -498,7 +477,7 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
     if showLetter:
       thisStream[thisLtrIdx].setColor( letterColor )
     else: thisStream[thisLtrIdx].setColor( bgColor )
-    posThis = calcStreamPos(numRings,streamsPerRing,baseAngleThisTrial,cueOffsets,streami,streamOrNoise=0)
+    posThis = calcStreamPos(numStreams, streami, cueOffsets)
 
     thisStream[thisLtrIdx].pos = posThis
     thisStream[thisLtrIdx].draw()
@@ -741,8 +720,8 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             corrAnsEachResp.append( np.array( streamLtrSequences[1][cuesTemporalPos[1]] )   ) #I don't know whether streamLtrSequences[1] means what I want it to mean, the second stream
             if len(cuesTemporalPos) > 1:
                 print("WARNING: Expected only 1 temporal position for cues with T1T2T3 task, but have ", len(cuesTemporalPos))
-            cues[0].setPos([0,0])
-            cues[1].setPos([1,0])
+            cues[0].pos = calcStreamPos(3, 1, cueOffsets)
+            cues[1].pos = calcStreamPos(3,2,cueOffsets)
             print('whichStreamEachCue=',whichStreamEachCue)
     else: #assume all len(cuesTemporalPos) streams cued at same time, with numRespsWanted to be reported, in random order.
         #For instance, if numRespsWanted = 1, then a random one is queried.
@@ -770,7 +749,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
 #                print('newX=',newX,'newY=',newY)
 #                posThis = [newX,newY]
                 desiredDistFromFixatnEachRing = [ desiredDistFromFixatn ] * numRings
-                posThis = calcStreamPos(numRings,streamsPerRing,desiredDistFromFixatnEachRing,streamI,streamOrNoise=0)
+                posThis = calcStreamPos(3, streami,)
             cues[streamI].setPos( posThis )
             cueRadiusThis = 1.05*calcLtrHeightSize( ltrHeight, cueOffsets, ringNum=int(streamI/streamsPerRing) )
             cues[streamI].setRadius( cueRadiusThis )
