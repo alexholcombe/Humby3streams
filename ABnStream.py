@@ -360,14 +360,16 @@ for streamsPerRing in streamsPerRingPossibilities:
        #setting targetLeftRightIfOne constant because which stream randomisation taken care of by baseAngle. Stream0 will always be the one cued, but it'll be in a random position
        for targetLeftRightIfOne in  ['right']: # ['left','right']: #If single target, should it be on the left or the right?
         randomlyAssignCuesToStreams = True
-         for cueTemporalPos in possibleCueTemporalPositions:
-          for firstRespLRifTwo in ['left','right']:  #If dual target and lineup response, should left one or right one be queried first?
-            #Don't even try to counterbalance response order in Jen's experiment, because 3 possible first values for 3 targets and 6 orders and also two for two targets
-            stimListDualStream.append(         
-                 {'numRings':numRings, 'streamsPerRing':streamsPerRing, 'numRespsWanted':numResponsesWanted, 'task':task, 'targetLeftRightIfOne':targetLeftRightIfOne, 
-                    'cue0temporalPos':cueTemporalPos, 'firstRespLRifTwo': firstRespLRifTwo, 'cue1lag':0,'numToCue':numToCue} 
-              )  #cue1lag = 0, meaning simultaneous targets
-
+        for cueTemporalPos in possibleCueTemporalPositions:
+            for firstRespLRifTwo in ['left','right']:  #If dual target and lineup response, should left one or right one be queried first?
+                #Don't even try to counterbalance response order in Jen's experiment, because 3 possible first values for 3 targets and 6 orders and also two for two targets
+                if task == 'T1T2T3':
+                    for cuedStreams in ['all','all','all']:
+                        stimListDualStream.append(         
+                             {'numRings':numRings, 'streamsPerRing':streamsPerRing, 'numRespsWanted':numResponsesWanted, 'task':task, 'targetLeftRightIfOne':targetLeftRightIfOne, 
+                                'cue0temporalPos':cueTemporalPos, 'firstRespLRifTwo': firstRespLRifTwo, 'cue1lag':0,'numToCue':numToCue, 'cuedStreams': cuedStreams} 
+                          )  #cue1lag = 0, meaning simultaneous targets
+        
 trialsPerConditionDualStream = 2
 trials = data.TrialHandler(stimListDualStream,trialsPerConditionDualStream) #constant stimuli method
 
@@ -402,7 +404,7 @@ print('experimentPhase\ttrialnum\tsubject\ttask\t',file=dataFile,end='')
 print('noisePercent\t',end='',file=dataFile)
 print('targetLeftRightIfOne\t',end='',file=dataFile)
 print('streamsPerRing\t',end='',file=dataFile)
-print('baseAngleCWfromEast\t',end='',file=dataFile)
+print('cuedStreams\t',end='',file=dataFile)
 printInOrderOfResponses = True
 assert (printInOrderOfResponses==True), "Sorry, feature not supported"
 if printInOrderOfResponses:
@@ -425,11 +427,15 @@ def calcStreamPos(numStreams, streami, cueOffsets):
     #streamOrNoise because noise coordinates have to be in deg, stream in pix
     #cueOffsets are in deg, for instance indicating the eccentricity of the streams/cues
     noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
-    middle = len(numStreams)/2 - .5
-    eccentricity = cueOffsets[abs(streami - middle)]
-    sign = (streami - middle)/abs(streami - middle)
-    eccentricity = sign * eccentricity
-    pos = (eccentricity,0)
+    middle = int(numStreams/2 - .5)
+    print('Middle: ' + str(middle))
+    if streami == middle:
+        pos = (0,0)
+    else:
+        eccentricity = cueOffsets[abs(streami - middle)-1]
+        sign = (-1,1)[(streami - middle)<0]
+        eccentricity = sign * eccentricity
+        pos = (eccentricity,0)
 
         
     #pos = np.round(pos) #rounding or integer is a bad idea. Then for small radii, not equally spaced
@@ -437,7 +443,7 @@ def calcStreamPos(numStreams, streami, cueOffsets):
     return pos
 
 def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIframes,cuesTemporalPos,whichStreamEachCue,
-                                      numRings,streamsPerRing,ltrStreams,baseAngleThisTrial,
+                                      numRings,streamsPerRing,ltrStreams, whichCued,
                                       noiseEachStream,proportnNoise,noiseCoordsEachStream,numNoiseDotsEachStream):#draw letter and possibly cue and noise on top
 #defining a function to draw each frame of stim. 
 
@@ -474,7 +480,7 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
     if showLetter:
       thisStream[thisLtrIdx].setColor( letterColor )
     else: thisStream[thisLtrIdx].setColor( bgColor )
-    posThis = calcStreamPos(numStreams, streami, cueOffsets)
+    posThis = calcStreamPos(streamsPerRingPossibilities, streami, cueOffsets)
 
     thisStream[thisLtrIdx].pos = posThis
     thisStream[thisLtrIdx].draw()
@@ -700,9 +706,9 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         elif numRings==1 and streamsPerRing==2:  #2 streams with targets in different streams
             print("ERROR: Not set up for 2-stream AB currently, but seems like that's what you are asking for")
             #stream=1
-            #cues[0].setPos(  calcStreamPos(numStreams,stream,cueOffset,streamOrNoise=0)  )
+            #cues[0].setPos(  calcStreamPos(streamsPerRingPossibilities,stream,cueOffset,streamOrNoise=0)  )
             #stream=0
-            #cues[1].setPos( calcStreamPos(numStreams,stream,cueOffset,streamOrNoise=0)  )
+            #cues[1].setPos( calcStreamPos(streamsPerRingPossibilities,stream,cueOffset,streamOrNoise=0)  )
             whichRespEachCue.append(0)
             whichRespEachCue.append(1)
         elif trial['task'] =='T1T2' and streamsPerRing==3:  #HUMBY HONOURS, add T1T2T3 next
@@ -718,7 +724,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             if len(cuesTemporalPos) > 1:
                 print("WARNING: Expected only 1 temporal position for cues with T1T2T3 task, but have ", len(cuesTemporalPos))
             cues[0].pos = calcStreamPos(3, 1, cueOffsets)
-            cues[1].pos = calcStreamPos(3,2,cueOffsets)
+            cues[1].pos = calcStreamPos(3, 2, cueOffsets)
             print('whichStreamEachCue=',whichStreamEachCue)
     else: #assume all len(cuesTemporalPos) streams cued at same time, with numRespsWanted to be reported, in random order.
         #For instance, if numRespsWanted = 1, then a random one is queried.
@@ -737,7 +743,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         for streamI in xrange( numRings*streamsPerRing ): #Drawing the cues in the location they're supposed to be in
             #assume each cue the succeeding stream (usually all cues same temporal position)
             #assume only one response per time (Only one stream queried per temporalPos). Cut this down to one below.
-            posThis =  calcStreamPos(numRings,streamsPerRing,trial['baseAngleCWfromEast'],cueOffsets,streamI,streamOrNoise=0)
+            posThis =  calcStreamPos(3, streamI, cueOffsets)
             if cueType =='endogenous':  #reduce radius to bring it right next to fixation center
 #                angleRad = streamI/numStreams * 2*pi
                 desiredDistFromFixatn=2 #pixels
@@ -831,13 +837,13 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     #myWin.setRecordFrameIntervals(True);  #can't get it to stop detecting superlong frames
     t0 = trialClock.getTime()
     for n in range(trialDurFrames): #this is the loop for this trial's stimulus!
-        if showRefreshMisses: #flicker fixation on and off at framerate to see when skip frame
-            if n%2 or demo or exportImages: 
-                  fixatn.draw()
-            else: fixatnCounterphase.draw()
-        fixatnPoint.draw()
+#       if showRefreshMisses: #flicker fixation on and off at framerate to see when skip frame
+#            if n%2 or demo or exportImages: 
+#                  fixatn.draw()
+#            else: fixatnCounterphase.draw()
+        #fixatnPoint.draw() #Showing fixation only for the first section of the trial, because the central stream occupies the same region of the screen
         worked = oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIframes,cuesTemporalPos,whichStreamEachCue,
-                                                      numRings,streamsPerRing,ltrStreams,thisTrial['baseAngleCWfromEast'],
+                                                      numRings,streamsPerRing,ltrStreams,thisTrial['cuedStreams'],
                                                      noiseEachStream,proportnNoise,noiseCoordsEachStream,numNoiseDotsEachStream) #draw letter and possibly cue and noise on top
         if exportImages:
             myWin.getMovieFrame(buffer='back') #for later saving
@@ -1201,7 +1207,7 @@ else: #not staircase
             print('main\t', end='', file=dataFile) #first thing printed on each line of dataFile
             print(nDone,'\t', end='', file=dataFile)
             print(subject,'\t',thisTrial['task'],'\t', round(noisePercent,3),'\t', 
-                  thisTrial['targetLeftRightIfOne'],'\t',thisTrial['streamsPerRing'],'\t',thisTrial['baseAngleCWfromEast'],'\t', end='', file=dataFile)
+                  thisTrial['targetLeftRightIfOne'],'\t',thisTrial['streamsPerRing'],'\t',thisTrial['cuedStreams'],'\t', end='', file=dataFile)
             
             allCorrect,eachRespCorrect,eachApproxCorrect,T1approxCorrect,passThisTrial,expStop = handleAndScoreResponse(
                     passThisTrial,responses,responsesAutopilot,thisTrial['task'],streamLtrSequences,cuesTemporalPos,whichStreamEachCue,
