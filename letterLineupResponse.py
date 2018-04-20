@@ -62,7 +62,7 @@ def drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,numLineupsT
     if numLineupsToDraw >= 2:
         lightnessLCR[0] = dimRGB
         lightnessLCR[2] = dimRGB
-    if numLineups == 3:
+    if numLineupsToDraw == 3:
         lightnessLCR[1] = dimRGB
 
     lightnessLCR[leftCentralRight] = 1 #Make the one being probed now bright
