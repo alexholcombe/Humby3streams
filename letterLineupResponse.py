@@ -2,7 +2,7 @@ from __future__ import print_function
 from psychopy import event, sound, logging
 from psychopy import visual, event, sound, tools
 import numpy as np
-import string
+import string, random
 from math import floor
 from copy import deepcopy
 
@@ -114,7 +114,7 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralR
         constCoord = 0
         OKrespZone.pos += [0,-.6]
         OKtextStim.pos+= [0,-.6]
-        horizVert = 0 #horizontal
+        horizVert = 1 #horizontal
    elif leftCentralRight == 2: #right
         constCoord = xOffset
         horizVert = 1 #vertical
@@ -226,16 +226,28 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralR
    return response, button, expStop
         
 def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLineups,leftCentralRight,autopilot):
-    #leftRightCentral is 0 if draw on left side first (or only), 1 if draw right side first (or only), 2 if draw centrally only
-    if type(leftCentralRight) is str: #convert to 0/1
+    #leftRightCentral is 0 if respond on left side first (or only), 1 if  central side first (or only), 2 if right first
+    if type(leftCentralRight) is str: #convert to 0/1/2
         if leftCentralRight == 'right':
             leftCentralRight = 2
         elif leftCentralRight == 'left':
             leftCentralRight = 0
         elif leftCentralRight == 'central':
-            leftCentralRight = 2
+            leftCentralRight = 1
         else:
             print("unrecognized leftRightCentral value")
+    respSeq = [leftCentralRight]
+    if numLineups ==2:
+        #second one is opposite (0->2 and 2->0)
+        respSeq = [leftCentralRight, -1*(leftCentralRight-1) + 1]
+    elif numLineups ==3:
+        respSeq = [0,1,2] #left, central, right is default order of response sequence
+        respSeq[0], respSeq[leftCentralRight] = respSeq[leftCentralRight], respSeq[leftCentralRight]  #swap first one with whichever one meant to be first
+        swapLastTwo = random.randint(0,1)
+        if swapLastTwo:
+            respSeq[1], respSeq[2] = respSeq[2], respSeq[1]  #swap first one with whichever one meant to be first
+    print('respSeq = ',respSeq)
+    
     expStop = False
     passThisTrial = False
     responsesAutopilot = []
@@ -250,7 +262,7 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
         OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(0, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
         OKtextStim.setText('OK')
         whichResp0, whichButtonResp0, expStop = \
-                collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,leftCentralRight,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
+                collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,respSeq[0],OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
         responses.append(whichResp0)
         buttons.append(whichButtonResp0)
     #MUST CREATE STATE MACHINE FOR 3-LINEUP CASE
@@ -259,7 +271,7 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
             responsesAutopilot.append('Z')
         else:
             #Draw arrays again, with that one dim, to collect the other response
-            leftCentralRight_this = -1* (leftCentralRight - 1) +1
+            leftCentralRight_this = respSeq[1]
             whichResp1, whichButtonResp1, expStop =  \
                 collectOneLineupResponse(myWin,bgColor,myMouse,numLineups, leftCentralRight_this, OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
             responses.append(whichResp1)
@@ -304,7 +316,7 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
     passThisTrial = False
     myMouse = event.Mouse()
 
-    testHorizontalLineup = True
+    testHorizontalLineup = False
     if testHorizontalLineup:
         #Do horizontal lineups
         responseDebug=False; responses = list(); responsesAutopilot = list();
@@ -316,21 +328,23 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
         print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
         print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
     
-    #Do vertical 2-lineup case
-    responseDebug=False; responses = list(); responsesAutopilot = list();
-    expStop = False
-    numLineups = 2
-    leftCentralRightFirst = 2
-    expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRightFirst, autopilot)
-    print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
-    print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
+    testVertical2Lineup = False
+    if testVertical2Lineup:
+        #Do vertical 2-lineup case
+        responseDebug=False; responses = list(); responsesAutopilot = list();
+        expStop = False
+        numLineups = 2
+        leftCentralRightFirst = 2
+        expStop,passThisTrial,responses,buttons,responsesAutopilot = \
+                    doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRightFirst, autopilot)
+        print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
+        print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
     
     #Do vertical 3-lineup case
     responseDebug=False; responses = list(); responsesAutopilot = list();
     expStop = False
     numLineups = 3
-    leftCentralRightFirst = 1
+    leftCentralRightFirst = 2
     expStop,passThisTrial,responses,buttons,responsesAutopilot = \
                 doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRightFirst, autopilot)
     
