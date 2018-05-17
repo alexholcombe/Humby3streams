@@ -242,8 +242,8 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
         respSeq = [leftCentralRight, -1*(leftCentralRight-1) + 1]
     elif numLineups ==3:
         respSeq = [0,1,2] #left, central, right is default order of response sequence
-        respSeq[0], respSeq[leftCentralRight] = respSeq[leftCentralRight], respSeq[leftCentralRight]  #swap first one with whichever one meant to be first
-        swapLastTwo = random.randint(0,1)
+        respSeq[0], respSeq[leftCentralRight] = respSeq[leftCentralRight], respSeq[0]  #swap first one with whichever one meant to be first
+        swapLastTwo = random.randint(0,1) #flip a coin
         if swapLastTwo:
             respSeq[1], respSeq[2] = respSeq[2], respSeq[1]  #swap first one with whichever one meant to be first
     print('respSeq = ',respSeq)
