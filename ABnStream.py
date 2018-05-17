@@ -1208,8 +1208,8 @@ else: #not staircase
             alphabet = list(string.ascii_uppercase)
             possibleResps = alphabet 
             possibleResps.remove('C'); possibleResps.remove('W')
-            expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,showBothSides,sideFirstLeftRightCentral,autopilot) #CAN'T YET HANDLE MORE THAN 2 LINEUPS
+            expStop,passThisTrial,responses,buttons,responsesAutopilot = \       
+                letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,sideFirstLeftRightCentral,autopilot) 
         else:
             expStop,passThisTrial,responses,responsesAutopilot = \
                     stringResponse.collectStringResponse(thisTrial['numRespsWanted'],respPromptStim,respStim,acceptTextStim,myWin,clickSound,badKeySound,

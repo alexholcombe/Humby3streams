@@ -255,27 +255,23 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
     buttons = []
     #First collect one, then dim that one and collect the other
     xOffset = 0.7
-    if autopilot: #I haven't bothered to make autopilot display the response screen
-        responsesAutopilot.append('Z')
-    else:
-        OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.5, .5], sf=[0, 0], name='OKrespZone')
-        OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(0, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
-        OKtextStim.setText('OK')
-        whichResp0, whichButtonResp0, expStop = \
-                collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,respSeq[0],OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
-        responses.append(whichResp0)
-        buttons.append(whichButtonResp0)
-    #MUST CREATE STATE MACHINE FOR 3-LINEUP CASE
-    if not expStop and numLineups>1:
-        if autopilot:
+    
+    numDone = 0
+    while numDone < numLineups:
+        if autopilot: #I haven't bothered to make autopilot display the response screen
             responsesAutopilot.append('Z')
         else:
-            #Draw arrays again, with that one dim, to collect the other response
-            leftCentralRight_this = respSeq[1]
-            whichResp1, whichButtonResp1, expStop =  \
-                collectOneLineupResponse(myWin,bgColor,myMouse,numLineups, leftCentralRight_this, OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
-            responses.append(whichResp1)
+            #Draw arrays again, with some (if more than one) dim, to collect the other response
+            OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.5, .5], sf=[0, 0], name='OKrespZone')
+            OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(0, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
+            OKtextStim.setText('OK')
+            leftCentralRight_this = respSeq[numDone]
+            whichResp0, whichButtonResp0, expStop = \
+                    collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
+            responses.append(whichResp0)
             buttons.append(whichButtonResp0)
+        numDone += 1 
+    
     return expStop,passThisTrial,responses,buttons,responsesAutopilot
 
 def setupSoundsForResponse():
@@ -348,6 +344,6 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
     expStop,passThisTrial,responses,buttons,responsesAutopilot = \
                 doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRightFirst, autopilot)
     
-    #print('autopilot=',autopilot, 'responses=',responses)
-    #print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
+    print('autopilot=',autopilot, 'responses=',responses)
+    print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
     print('Finished') 
