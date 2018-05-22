@@ -109,7 +109,7 @@ if quitFinder:
 #letter size 2.5 deg
 numLettersToPresent = 24
 #For AB, minimum SOAms should be 84  because any shorter, I can't always notice the second ring when lag1.   71 in Martini E2 and E1b (actually he used 66.6 but that's because he had a crazy refresh rate of 90 Hz)
-SOAms = 82.35 #82.35 Battelli, Agosta, Goodbourn, Holcombe mostly using 133
+SOAms = 200 #82.35 Battelli, Agosta, Goodbourn, Holcombe mostly using 133
 letterDurMs = 60 #60
 
 ISIms = SOAms - letterDurMs
@@ -432,16 +432,15 @@ def calcStreamPos(numStreams, streami, cueOffsets):
     #streamOrNoise because noise coordinates have to be in deg, stream in pix
     #cueOffsets are in deg, for instance indicating the eccentricity of the streams/cues
     noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
-    middle = int(numStreams/2 - .5)
-    print('Middle: ' + str(middle))
+    middle = int(numStreams/2.0 - .5) #index of the middle stream
     if streami == middle:
-        pos = (0,0)
+        pos = (0,0) #place the middle stream at the screen center
     else:
+        #other ones on either side of the middle
         eccentricity = cueOffsets[abs(streami - middle)-1]
         sign = (-1,1)[(streami - middle)<0]
         eccentricity = sign * eccentricity
         pos = (eccentricity,0)
-
         
     #pos = np.round(pos) #rounding or integer is a bad idea. Then for small radii, not equally spaced
     #pos = pos.astype(int)
@@ -498,7 +497,7 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
                 np.random.shuffle(noiseCoordsEachStream[streami]) #refresh the noise by shuffling the possible locations of noise dots
                 numNoiseDotsThis = numNoiseDotsEachStream[streami]
                 dotCoords = noiseCoordsEachStream[streami][0:numNoiseDotsThis] #Take the first numNoiseDots random locations to plot the dots
-                posThisDeg =  calcStreamPos(numRings,streamsPerRing,cueOffsets,streami,streamOrNoise=1)
+                posThisDeg =  calcStreamPos(streamsPerRingPossibilities, streami, cueOffsets)
                 #print('streami=',streami,'posThisDeg=',posThisDeg,'cueOffsets=',cueOffsets,'numStream=',numStreams)
                 #Displace the noise to present it over the letter stream
                 dotCoords[:,0] += posThisDeg[0]
@@ -596,7 +595,7 @@ def timingCheckAndLog(ts,trialN):
                         if idx+1<len(interframeIntervs):  flankingAlso.append(idx+1)
                         else: flankingAlso.append(np.NaN)
                     flankingAlso = np.array(flankingAlso)
-                    flankingAlso = flankingAlso[np.negative(np.isnan(flankingAlso))]  #remove nan values
+                    flankingAlso = flankingAlso[~(np.isnan(flankingAlso))]  #remove nan values
                     flankingAlso = flankingAlso.astype(np.integer) #cast as integers, so can use as subscripts
                     logging.info( 'flankers also='+str( np.around( interframeIntervs[flankingAlso], 1) )  ) #because this is not an essential error message, as previous one already indicates error
                       #As INFO, at least it won't fill up the console when console set to WARNING or higher
@@ -682,7 +681,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             whichStreamEachCue.append(0)
             whichRespEachCue.append(0)
             stream=0
-            cues[0].setPos( calcStreamPos(numRings,streamsPerRing,cueOffsets,stream,streamOrNoise=0) )
+            cues[0].setPos( calcStreamPos(streamsPerRingPossibilities, streami, cueOffsets) )
 
         elif trial['targetLeftRightIfOne']=='left':
             corrAnsEachResp.append( np.array( streamLtrSequences[1][cuesTemporalPos[0]] )  ) #which streams are targets? Need variable for that.
@@ -1198,6 +1197,7 @@ else: #not staircase
             alphabet = list(string.ascii_uppercase)
             possibleResps = alphabet 
             possibleResps.remove('C'); possibleResps.remove('W')
+            numLineups = thisTrial['numToCue']
             expStop,passThisTrial,responses,buttons,responsesAutopilot = \
                 letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,sideFirstLeftRightCentral,autopilot) 
         else:

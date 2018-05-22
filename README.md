@@ -7,4 +7,8 @@ This was created for Humby's honours thesis, so that she could run her first exp
 
 ** NOTES **
 
+- whichStreamEachResp (and also whichRespEachCue) is set up by doRSVPstim
+
+needs to be passed to lineu9p?
+
 - angleBase determines which stream cued. Too complicated or is it working?
