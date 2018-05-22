@@ -7,6 +7,10 @@ This was created for Humby's honours thesis, so that she could run her first exp
 
 ** NOTES **
 
+- Alex work on handleAndScoreResponse for 2 cues but 3 streams, hence pay attention to whichStreamEachCue
+
+- Only working now for 3 streams, lot of vestigial nonworking code for fewer/more streams
+
 - whichStreamEachResp (and also whichRespEachCue) is set up by doRSVPstim
 
 needs to be passed to lineu9p?

@@ -120,7 +120,6 @@ ISIframes = int( np.floor(ISIms / (1000./refreshRate)) )
 rateInfo = 'total SOA=' + str(round(  (ISIframes + letterDurFrames)*1000./refreshRate, 2)) + ' or ' + str(ISIframes + letterDurFrames) + ' frames, comprising\n'
 rateInfo+=  'ISIframes ='+str(ISIframes)+' or '+str(ISIframes*(1000./refreshRate))+' ms and letterDurFrames ='+str(letterDurFrames)+' or '+str(round( letterDurFrames*(1000./refreshRate), 2))+'ms'
 logging.info(rateInfo); print(rateInfo)
-print("HELLLOOOO")
 trialDurFrames = int( numLettersToPresent*(ISIframes+letterDurFrames) ) #trial duration in frames
 
 monitorname = 'testmonitor'
@@ -133,14 +132,12 @@ def openMyStimWindow(): #make it a function because have to do it several times,
                    winType='pyglet' ) #pygame doesn't work, don't know why. Works in textLocationTest.py
     return myWin
 myWin = openMyStimWindow()
-print("HEL2")
 
 refreshMsg2 = ''
 if not checkRefreshEtc:
     refreshMsg1 = 'REFRESH RATE WAS NOT CHECKED'
     refreshRateWrong = False
 else: #checkRefreshEtc
-    print("HEL3") 
     runInfo = psychopy.info.RunTimeInfo(
             # if you specify author and version here, it overrides the automatic detection of __author__ and __version__ in your script
             #author='<your name goes here, plus whatever you like, e.g., your lab or contact info>',
@@ -151,7 +148,6 @@ else: #checkRefreshEtc
             userProcsDetailed=True  ## if verbose and userProcsDetailed, return (command, process-ID) of the user's processes
             )
     print(runInfo)
-    print('HEL3.5')
     logging.info(runInfo)
     print('Finished runInfo- which assesses the refresh and processes of this computer') 
     #check screen refresh is what assuming it is ##############################################
@@ -179,7 +175,6 @@ else: #checkRefreshEtc
     myWinRes = myWin.size
     myWin.allowGUI =True
 myWin.close() #have to close window to show dialog box
-print("HEL4") 
 
 defaultNoiseLevel = 0#90.0 #to use if no staircase, can be set by user
 dlgLabelsOrdered = list()
@@ -201,14 +196,12 @@ else:
     dlgLabelsOrdered.append('defaultNoiseLevel')
     #myDlg.addField('Trials per condition (default=' + str(trialsPerCondition) + '):', trialsPerCondition, tip=str(trialsPerCondition))
     #dlgLabelsOrdered.append('trialsPerCondition')
-print('HEL5')
 myDlg.addText(refreshMsg1, color='Black')
 if refreshRateWrong:
     myDlg.addText(refreshMsg2, color='Red')
 if refreshRateWrong:
     logging.error(refreshMsg1+refreshMsg2)
 else: logging.info(refreshMsg1+refreshMsg2)
-print('HEL6')
 
 if checkRefreshEtc and (not demo) and (myWinRes != [widthPix,heightPix]).any():
     msgWrongResolution = 'Screen apparently NOT the desired resolution of '+ str(widthPix)+'x'+str(heightPix)+ ' pixels!!'
@@ -1036,7 +1029,7 @@ noisePercent = defaultNoiseLevel
 nDone =0
 totalTrials = 0
 
-msg = "Starting dual stream part of experiment"
+msg = "Starting 3 streams"
 logging.info(msg); print(msg)
 totalTrials = trials.nTotal
 
@@ -1072,14 +1065,14 @@ while nDone < totalTrials and expStop==False:
                 #sideFirstLeftRightCentral =  not whichStreamEachResp[0]  #thisTrial['firstRespLR']
             else: #numStreams must be greater than 2. Probably only want to do lineup for 1. As stopgap measure, can put the lineup centrally on every trial
                 showBothSides = False
-        print('sideFirstLeftRightCentral = ',sideFirstLeftRightCentral) #debugON
+        print('whichStreamEachResp = ',whichStreamEachResp) #debugON
         alphabet = list(string.ascii_uppercase)
         possibleResps = alphabet 
         possibleResps.remove('C'); possibleResps.remove('W')
         numLineups = thisTrial['numToCue']
-        #add whichStreamEachResp to doLineup???????????
+        print('corrAnsEachResp=',corrAnsEachResp)
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-            letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,sideFirstLeftRightCentral,autopilot) 
+            letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,whichStreamEachResp,autopilot) 
     else:
         expStop,passThisTrial,responses,responsesAutopilot = \
                 stringResponse.collectStringResponse(thisTrial['numRespsWanted'],respPromptStim,respStim,acceptTextStim,myWin,clickSound,badKeySound,

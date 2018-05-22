@@ -225,28 +225,8 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralR
    #print('Returning with response=',response,'button=',button,' expStop=',expStop)
    return response, button, expStop
         
-def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLineups,leftCentralRight,autopilot):
-    #leftRightCentral is 0 if respond on left side first (or only), 1 if  central side first (or only), 2 if right first
-    if type(leftCentralRight) is str: #convert to 0/1/2
-        if leftCentralRight == 'right':
-            leftCentralRight = 2
-        elif leftCentralRight == 'left':
-            leftCentralRight = 0
-        elif leftCentralRight == 'central':
-            leftCentralRight = 1
-        else:
-            print("unrecognized leftRightCentral value")
-    respSeq = [leftCentralRight]
-    if numLineups ==2:
-        #second one is opposite (0->2 and 2->0)
-        respSeq = [leftCentralRight, -1*(leftCentralRight-1) + 1]
-    elif numLineups ==3:
-        respSeq = [0,1,2] #left, central, right is default order of response sequence
-        respSeq[0], respSeq[leftCentralRight] = respSeq[leftCentralRight], respSeq[0]  #swap first one with whichever one meant to be first
-        swapLastTwo = random.randint(0,1) #flip a coin
-        if swapLastTwo:
-            respSeq[1], respSeq[2] = respSeq[2], respSeq[1]  #swap first one with whichever one meant to be first
-    print('respSeq = ',respSeq)
+def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLineups,whichLineupEachResp,autopilot):
+    #whichLineupEachResp: 0 is left side, 1 is central, 2 is right
     
     expStop = False
     passThisTrial = False
@@ -265,7 +245,7 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
             OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.5, .5], sf=[0, 0], name='OKrespZone')
             OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(0, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
             OKtextStim.setText('OK')
-            leftCentralRight_this = respSeq[numDone]
+            leftCentralRight_this = whichLineupEachResp[numDone]
             whichResp0, whichButtonResp0, expStop = \
                     collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
             responses.append(whichResp0)
@@ -340,9 +320,9 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
     responseDebug=False; responses = list(); responsesAutopilot = list();
     expStop = False
     numLineups = 3
-    leftCentralRightFirst = 2
+    whichLineupEachResp = [2,1,0]
     expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRightFirst, autopilot)
+                doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, whichLineupEachResp, autopilot)
     
     print('autopilot=',autopilot, 'responses=',responses)
     print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
