@@ -863,12 +863,13 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     postCueNumBlobsAway=-999 #doesn't apply to non-tracking and click tracking task
     return streamLtrSequences,cuesTemporalPos,corrAnsEachResp,whichStreamEachCue,whichStreamEachResp,whichRespEachCue,ts  
  
-def handleAndScoreResponse(passThisTrial,responses,responsesAutopilot,task,streamLtrSequences,
+def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,task,streamLtrSequences,
                                                      cuesTemporalPos,whichStreamEachCue,whichStreamEachResp,corrAnsEachResp,whichRespEachCue):
     #Handle response, calculate whether correct, ########################################
     #global printInOrderOfResponses
     if autopilot or passThisTrial:
         responses = responsesAutopilot
+        buttons = [0]*len(responsesAutopilot)
         if autopilot: print("autopilot and fake responses are:",responses)
 
     print( "Inside handleAndScoreResponse corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp], " whichRespEachCue=",whichRespEachCue)
@@ -1086,7 +1087,7 @@ while nDone < totalTrials and expStop==False:
                                                                                 requireAcceptance,autopilot,responseDebug=True)
     myMouse.clickReset()
     myWin.setMouseVisible(False)
-    print(' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
+    print(' responses=',responses, 'buttons=',buttons, ' responsesAutopilot =', responsesAutopilot)
     if not expStop:
         #header is 'trialnum\tsubject\ttask\t'
         print('main\t', end='', file=dataFile) #first thing printed on each line of dataFile
@@ -1095,7 +1096,7 @@ while nDone < totalTrials and expStop==False:
               thisTrial['targetLeftRightIfOne'],'\t',thisTrial['streamsPerRing'],'\t',thisTrial['cuedStreams'],'\t', end='', file=dataFile)
         
         allCorrect,eachRespCorrect,eachApproxCorrect,T1approxCorrect,passThisTrial,expStop = handleAndScoreResponse(
-                passThisTrial,responses,responsesAutopilot,thisTrial['task'],streamLtrSequences,cuesTemporalPos,whichStreamEachCue,
+                passThisTrial,responses,buttons,responsesAutopilot,thisTrial['task'],streamLtrSequences,cuesTemporalPos,whichStreamEachCue,
                 whichStreamEachResp,corrAnsEachResp,whichRespEachCue)
         print('Scored response.   allCorrect=', allCorrect) #debugAH
         for i in range( numRings * max(streamsPerRingPossibilities) ):
