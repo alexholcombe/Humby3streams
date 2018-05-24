@@ -67,7 +67,7 @@ widthPix= 1024 #monitor width in pixels of Agosta
 heightPix= 768 #800 #monitor height in pixels
 monitorwidth = 40.5 #monitor width in cm
 scrn=0 #0 to use main screen, 1 to use external screen connected to computer
-fullscr=True #True to use fullscreen, False to not. Timing probably won't be quite right if fullscreen = False
+fullscr=False #True to use fullscreen, False to not. Timing probably won't be quite right if fullscreen = False
 allowGUI = False
 if demo: monitorwidth = 23#18.0
 if exportImages:
@@ -109,7 +109,7 @@ if quitFinder:
 #letter size 2.5 deg
 numLettersToPresent = 24
 #For AB, minimum SOAms should be 84  because any shorter, I can't always notice the second ring when lag1.   71 in Martini E2 and E1b (actually he used 66.6 but that's because he had a crazy refresh rate of 90 Hz)
-SOAms = 200 #82.35 Battelli, Agosta, Goodbourn, Holcombe mostly using 133
+SOAms = 600 #82.35 Battelli, Agosta, Goodbourn, Holcombe mostly using 133
 letterDurMs = 60 #60
 
 ISIms = SOAms - letterDurMs
@@ -313,11 +313,11 @@ instructions1 = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb',color= (1,1,1),
 instructions2 = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb',color= (1,1,1),alignHoriz='center', alignVert='center',height=.5,units='deg',autoLog=autoLogging)
 
 instructionText1 = """
-This experiment is made up of 200 trials. On each trial you will fixate your eyes on a central point on the screen.Then several rapid sequences of letters will appear.
+On each trial you will fixate your eyes on a central point on the screen.Then several rapid sequences of letters will appear.
 
-You must not move your eyes from the fixation point while these sequences are playing.
+Do not move your eyes from the fixation point while these sequences are playing.
 
-One of the letters will appear with a white ring around it.Your job is to tell us which of the letters appeared within the white ring. Again, you must not move your eyes from the fixation point in the centre of the screen while the letter streams are shown.
+Your job is to click on which letters appeared within a white ring. Again, you must not move your eyes from the fixation point in the centre of the screen while the letter streams are shown.
 
 """
 
@@ -528,7 +528,7 @@ for cueN in xrange(numRings * max(streamsPerRingPossibilities)):
     cues.append(cue)
 
 def calcLtrHeightSize( ltrHeight, cueOffsets, ringNum ):
-    ltrHeightBase = 1/2.*ltrHeight
+    ltrHeightBase = ltrHeight #*1/2.
     #eccentricity scale including exponent. Check Strasburger
     mFactor = 1/5.
     ltrHeightThis = ltrHeightBase * mFactor*cueOffsets[ringNum]
@@ -536,7 +536,7 @@ def calcLtrHeightSize( ltrHeight, cueOffsets, ringNum ):
     
 #In each stream, predraw all 26 letters
 ltrHeight = 3 #Martini letters were 2.5deg high
-cueOffsets = [3,7,11.5]
+cueOffsets =   [1,3,5]    # [3,7,11.5]
 maxStreams = numRings * max(streamsPerRingPossibilities)
 ltrStreams = list()
 for streami in xrange(maxStreams):
@@ -753,12 +753,14 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             cues[streamI].setPos( posThis )
             cueRadiusThis = 1.05*calcLtrHeightSize( ltrHeight, cueOffsets, ringNum=int(streamI/streamsPerRing) )
             cues[streamI].setRadius( cueRadiusThis )
+        print('whichStreamEachCue = ', whichStreamEachCue, ' cuesTemporalPos=',cuesTemporalPos)
         for cuei in xrange(numCues):  #work out correct answer for each cue
             whichStreamThisCue = whichStreamEachCue[cuei]
             letterIdxThisStream = streamLtrSequences[whichStreamThisCue][cuesTemporalPos[cuei]]
             corrAnsEachCue.append( letterIdxThisStream    )
             corrAnsEachResp.append( letterIdxThisStream )
             whichRespEachCue.append(cuei) #assume that responses are queried in the order of the cues. Note that above, which stream each cue corresponds to is random
+        print('corrAnsEachCue=',corrAnsEachCue)
         #Need to shuffle which stream is queried first, second, etc. Remember, we're assuming there's only one temporalPos
         #reduce whichStreamEachResp to numRespsWanted. Also whichRespEachCue. Leave corrAnsEachResp same length so can do error analysis checking for swaps.
         whichRespEachCue = np.array(whichRespEachCue) #so that behaves correctly with np.where
@@ -779,11 +781,15 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     #    print( 'streamLtrSequences[1]=',[numberToLetter(x) for x in streamLtrSequences[1]] )
     firstCueStream = whichStreamEachCue[0]
     firstCueItem = streamLtrSequences[firstCueStream][cuesTemporalPos[0]]
-    #print( "corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp],  "First cue cues stream",firstCueStream,   " and letter ",numberToLetter(firstCueItem), end='')
+    print( "corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp],  "First cue cues stream",firstCueStream,   " and letter ",numberToLetter(firstCueItem), end='')
     if trial['numToCue'] > 1:
         secondCueStream = whichStreamEachCue[1]
-        secondCueItem = streamLtrSequences[secondCueStream][cuesTemporalPos[1]]
-        print(  " while second cue cues stream",secondCueStream, " and letter ",numberToLetter(secondCueItem) )
+        secondCueItem = streamLtrSequences[secondCueStream][cuesTemporalPos[0]]
+        print(  "  2nd cue cues stream",secondCueStream, " and (if simultaneous) letter ",numberToLetter(secondCueItem) )
+        if trial['numToCue']>2:
+            thirdCueStream = whichStreamEachCue[2]
+            thirdCueItem = streamLtrSequences[thirdCueStream][cuesTemporalPos[0]]
+            print(  "  3rd cue cues stream",thirdCueStream, " and letter (if simultaneous) ",numberToLetter(thirdCueItem) )
     else: print('')
     #end debug printouts
             
@@ -995,15 +1001,18 @@ def play_high_tone_correct_low_incorrect(correct, passThisTrial=False):
 
 expStop=False
 
-instructions1.draw()
-myWin.flip()
-waiting = True
-while waiting:
-   for key in event.getKeys():      #check if pressed abort-type key
-         if key in ['space','ESCAPE']: 
-            waiting=False
-         if key in ['ESCAPE']:
-            expStop = True
+showInstructions = False
+
+if showInstructions:
+    instructions1.draw()
+    myWin.flip()
+    waiting = True
+    while waiting:
+       for key in event.getKeys():      #check if pressed abort-type key
+             if key in ['space','ESCAPE']: 
+                waiting=False
+             if key in ['ESCAPE']:
+                expStop = True
 
 #instructions2.draw()
 #myWin.flip()
@@ -1070,7 +1079,7 @@ while nDone < totalTrials and expStop==False:
         possibleResps = alphabet 
         possibleResps.remove('C'); possibleResps.remove('W')
         numLineups = thisTrial['numToCue']
-        print('corrAnsEachResp=',corrAnsEachResp)
+        print( 'now entering doLineup')
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
             letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,whichStreamEachResp,autopilot) 
     else:
@@ -1079,7 +1088,7 @@ while nDone < totalTrials and expStop==False:
                                                                                 requireAcceptance,autopilot,responseDebug=True)
     myMouse.clickReset()
     myWin.setMouseVisible(False)
-    print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
+    print(' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
     if not expStop:
         #header is 'trialnum\tsubject\ttask\t'
         print('main\t', end='', file=dataFile) #first thing printed on each line of dataFile
