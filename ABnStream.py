@@ -31,7 +31,7 @@ descendingPsycho = True
 #same screen or external screen? Set scrn=0 if one screen. scrn=1 means display stimulus on second screen.
 #widthPix, heightPix
 quitFinder = False #if checkRefreshEtc, quitFinder becomes True
-autopilot=False
+autopilot=True
 demo=False #False
 exportImages= False #quits after one trial
 subject='Hubert' #user is prompted to enter true subject name
@@ -44,7 +44,7 @@ else:
 timeAndDateStr = time.strftime("%d%b%Y_%H-%M", time.localtime())
 
 showRefreshMisses=True #flicker fixation at refresh rate, to visualize if frames missed
-feedback=False
+feedback=True
 autoLogging=False
 refreshRate = 60
 if demo:
@@ -109,7 +109,7 @@ if quitFinder:
 #letter size 2.5 deg
 numLettersToPresent = 24
 #For AB, minimum SOAms should be 84  because any shorter, I can't always notice the second ring when lag1.   71 in Martini E2 and E1b (actually he used 66.6 but that's because he had a crazy refresh rate of 90 Hz)
-SOAms = 600 #82.35 Battelli, Agosta, Goodbourn, Holcombe mostly using 133
+SOAms = 82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
 letterDurMs = 60 #60
 
 ISIms = SOAms - letterDurMs
@@ -340,7 +340,7 @@ def roundToNearestY(x,y): #round x to nearest y, e.g. rounding 65 to nearest 30 
 stimListDualStream=[]
 possibleCueTemporalPositions =  np.array([6,7,8,9,10]) 
 tasks=['T1','T1T2','T1T2T3','allCued','oneCued']
-numResponsesWanted=1; maxNumRespsWanted=2
+numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1 
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
