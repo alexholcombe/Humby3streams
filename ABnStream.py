@@ -327,15 +327,14 @@ instructionText2 ="""
 instructions1.text = instructionText1
 instructions2.text = instructionText2
 
-
-
+numLtrsInStream = 24
+bannedLtrs = ['C','W'] #don't use these in the streams
 
 def roundToNearestY(x,y): #round x to nearest y, e.g. rounding 65 to nearest 30 = 60
     ans = round (x*1.0 / y) * y
     return ans
 
 #SETTING THE CONDITIONS
-#For the optional attentional blink
     
 #For the dual-stream simultaneous target
 stimListDualStream=[]
@@ -380,22 +379,19 @@ def numberToLetter(number): #0 = A, 25 = Z
     #    return ('@')
     alpha = [i for i in string.ascii_uppercase]
     #print('Inside numberToLetter, number = ' + str(number))
-    if number < 0 or number > len(alpha) or number == 2 or number == 22:
+    if number < 0 or number > len(alpha):
         return '@'
     else:
         return alpha[number]
 
-
 def letterToNumber(letter): #A = 0, Z = 25
     #if it's not really a letter, return -999
     #HOW CAN I GENERICALLY TEST FOR LENGTH. EVEN IN CASE OF A NUMBER THAT'S NOT PART OF AN ARRAY?
+    if letter in bannedLtrs:
+        print('letterToNumber: I wasnt expecting ',letter,' because it is in bannedLtrs')
+
     alpha = [i for i in string.ascii_uppercase]
-    alpha.remove('C')
-    alpha.remove('W')
-    if letter == 'C' or letter == 'W':
-        return '@'
-    else:
-        return alpha.index(letter)
+    return( alpha.index(letter) )
 
 #print header for data file
 print('experimentPhase\ttrialnum\tsubject\ttask\t',file=dataFile,end='')
@@ -425,13 +421,13 @@ def calcStreamPos(numStreams, streami, cueOffsets):
     #streamOrNoise because noise coordinates have to be in deg, stream in pix
     #cueOffsets are in deg, for instance indicating the eccentricity of the streams/cues
     noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
-    middle = int(numStreams/2.0 - .5) #index of the middle stream
+    middle = int(numStreams/2.0 - .5) #index of the middle stream, e.g. 1 if there are 3
     if streami == middle:
         pos = (0,0) #place the middle stream at the screen center
     else:
         #other ones on either side of the middle
-        eccentricity = cueOffsets[abs(streami - middle)-1]
-        sign = (-1,1)[(streami - middle)<0]
+        eccentricity = cueOffsets[abs(streami - middle)-1] #e.g. cueOffsets[ 2-1-1 ]
+        sign = (-1,1)[(streami - middle)>0]
         eccentricity = sign * eccentricity
         pos = (eccentricity,0)
         
@@ -547,11 +543,10 @@ for streami in xrange(maxStreams):
     ltrHeightThis = calcLtrHeightSize( ltrHeight, cueOffsets, thisRingNum )
     #print('thisRingNum = ',thisRingNum,'streamsPerRing=',streamsPerRing, ' ltrHeightThis=',ltrHeightThis)
     for i in range(0,26):
-        if i is not 2 and i is not 22:
+        if i not in bannedLtrs:
             ltr = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb', font = font, color=letterColor,alignHoriz='center',alignVert='center',units='deg',autoLog=autoLogging)
             ltr.setHeight( ltrHeightThis )      
             letter = numberToLetter(i)
-            #print(letter)
             ltr.setText(letter,log=False)
             ltr.setColor(bgColor)
             streamThis.append( ltr )
@@ -653,9 +648,12 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     #assign the letters to be shown in each stream
     streamLtrSequences = list() 
     for streami in xrange(numRings * streamsPerRing):
-        letterSeqThisStream =  np.arange(0,24)
-        #letterSeqThisStream = np.delete(letterSeqThisStream, [2,22])
+        letterSeqThisStream =  np.arange(0,26)
+        numsForBanned =  [letterToNumber(l) for l in bannedLtrs]
+        letterSeqThisStream = np.delete(letterSeqThisStream, numsForBanned)
+        print('numsForBanned=',numsForBanned, ' letterSeqThisStream=',letterSeqThisStream)
         np.random.shuffle(letterSeqThisStream)
+        letterSeqThisStream = letterSeqThisStream[:numLtrsInStream]
         streamLtrSequences.append( letterSeqThisStream )
     avoidDuplicates = False
     if avoidDuplicates: #between first two streams
@@ -760,7 +758,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             corrAnsEachCue.append( letterIdxThisStream    )
             corrAnsEachResp.append( letterIdxThisStream )
             whichRespEachCue.append(cuei) #assume that responses are queried in the order of the cues. Note that above, which stream each cue corresponds to is random
-        print('corrAnsEachCue=',corrAnsEachCue)
+        print('corrAnsEachCue=',corrAnsEachCue, 'corrAnsEachResp=',corrAnsEachResp)
         #Need to shuffle which stream is queried first, second, etc. Remember, we're assuming there's only one temporalPos
         #reduce whichStreamEachResp to numRespsWanted. Also whichRespEachCue. Leave corrAnsEachResp same length so can do error analysis checking for swaps.
         whichRespEachCue = np.array(whichRespEachCue) #so that behaves correctly with np.where
@@ -773,7 +771,6 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         whichStreamEachResp = whichStreamEachResp[ :trial['numRespsWanted'] ] #reduce to actual number of responses
         corrAnsEachResp = corrAnsEachResp[ :trial['numRespsWanted'] ]  #reduce to actual number of responses.
         whichRespEachCue = whichRespEachCue[ :trial['numRespsWanted'] ]  #reduce to actual number of responses.
-        #print('whichStreamEachCue=',whichStreamEachCue,' whichStreamEachResp=',whichStreamEachResp,'whichRespEachCue=',whichRespEachCue,  ' corrAnsEachResp=',corrAnsEachResp)
     
     #debug printouts
     #print( 'streamLtrSequences[0]=',[numberToLetter(x) for x in streamLtrSequences[0]] )
@@ -1077,7 +1074,8 @@ while nDone < totalTrials and expStop==False:
         print('whichStreamEachResp = ',whichStreamEachResp) #debugON
         alphabet = list(string.ascii_uppercase)
         possibleResps = alphabet 
-        possibleResps.remove('C'); possibleResps.remove('W')
+        for c in bannedLtrs:
+            possibleResps.remove(c)
         numLineups = thisTrial['numToCue']
         print( 'now entering doLineup')
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
