@@ -1,5 +1,4 @@
-
-#Alex Holcombe alex.holcombe@sydney.edu.au
+#Alex Holcombe et al. alex.holcombe@sydney.edu.au
 #See the README.md for more information: https://github.com/alexholcombe/Humby3streams
 from __future__ import print_function, division
 from psychopy import monitors, visual, event, data, logging, core, sound, gui
@@ -344,7 +343,7 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1 
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[2] ]:  
+    for task in [ tasks[1] ]:    #tasks[2]
        if task=='T1T2':
             numResponsesWanted=2; numToCue=-999
        elif task=='T1T2T3':
@@ -1078,7 +1077,6 @@ while nDone < totalTrials and expStop==False:
         for c in bannedLtrs:
             possibleResps.remove(c)
         numLineups = thisTrial['numToCue']
-        print( 'now entering doLineup')
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
             letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,whichStreamEachResp,autopilot) 
     else:
