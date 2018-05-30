@@ -125,10 +125,12 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralR
    sideIndicator.setPos( [sideIndicatorCoord, 0] )
    chosenLtr = visual.TextStim(myWin, font = 'sloan',colorSpace='rgb',color=(1,1,1),alignHoriz='center', alignVert='center',height=.4,units='norm',autoLog=False)
    if horizVert: #vertical array
-    chosenLtr.setPos( [sideIndicatorCoord,0] )  #big drawing of chosen letter, offset from lineup
+    chosenLtrPos = [sideIndicatorCoord,0]
+    chosenLtr.setPos( chosenLtrPos )  #big drawing of chosen letter, offset from lineup
    else: #horizontal array
     sideIndicatorCoord = -.3
-    chosenLtr.setPos( [0,sideIndicatorCoord] )  #big drawing of chosen letter, offset from lineup
+    chosenLtrPos = [0,sideIndicatorCoord]
+    chosenLtr.setPos( chosenLtrPos )  #big drawing of chosen letter, offset from lineup
    
    whichResp = -1
    state = 'waitingForFirstClick' 
@@ -148,7 +150,10 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralR
             chosenLtr.setText(possibleResps[whichResp])
             chosenLtr.setColor( selectedColor )
             chosenLtr.draw()
+            #draw respZone and big OK at same place as big offset letter
+            OKrespZone.setPos( chosenLtrPos )
             OKrespZone.draw()
+            OKtextStim.setPos( chosenLtrPos )
             OKtextStim.draw()
         else:
             if leftCentralRight != 1:
@@ -242,10 +247,14 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
             responsesAutopilot.append('Z')
         else:
             #Draw arrays again, with some (if more than one) dim, to collect the other response
-            OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.5, .5], sf=[0, 0], name='OKrespZone')
-            OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(0, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
-            OKtextStim.setText('OK')
             leftCentralRight_this = whichLineupEachResp[numDone]
+            okZoneX = 0
+            if leftCentralRight_this == 1:
+                okZoneX = -.25 #Can't have it in center because then will occlude the lineup
+            OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.5, .5], pos=(okZoneX,0), sf=[0, 0], name='OKrespZone')
+            OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(okZoneX, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
+            OKtextStim.setText('OK')
+            
             whichResp0, whichButtonResp0, expStop = \
                     collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
             responses.append(whichResp0)
