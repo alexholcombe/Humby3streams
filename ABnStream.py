@@ -30,7 +30,7 @@ descendingPsycho = True
 #same screen or external screen? Set scrn=0 if one screen. scrn=1 means display stimulus on second screen.
 #widthPix, heightPix
 quitFinder = False #if checkRefreshEtc, quitFinder becomes True
-autopilot=False
+autopilot=True
 demo=False #False
 exportImages= False #quits after one trial
 subject='Hubert' #user is prompted to enter true subject name
@@ -427,15 +427,8 @@ def calcStreamPos(numStreams, streami, cueOffsets):
     #cueOffsets are in deg, for instance indicating the eccentricity of the streams/cues
     noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
     middle = int(numStreams/2.0 - .5) #index of the middle stream, e.g. 1 if there are 3
-    if streami == middle:
-        pos = (0,0) #place the middle stream at the screen center
-    else:
-        #other ones on either side of the middle
-        eccentricity = cueOffsets[abs(streami - middle)-1] #e.g. cueOffsets[ 2-1-1 ]
-        sign = (-1,1)[(streami - middle)>0]
-        eccentricity = sign * eccentricity
-        pos = (eccentricity,0)
-        
+    eccentricity = cueOffsets[streami] #e.g. cueOffsets[ 2-1-1 ]
+    pos = (eccentricity,0)
     #pos = np.round(pos) #rounding or integer is a bad idea. Then for small radii, not equally spaced
     #pos = pos.astype(int)
     return pos
@@ -479,7 +472,6 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
       thisStream[thisLtrIdx].setColor( letterColor )
     else: thisStream[thisLtrIdx].setColor( bgColor )
     posThis = calcStreamPos(streamsPerRingPossibilities, streami, cueOffsets)
-
     thisStream[thisLtrIdx].pos = posThis
     thisStream[thisLtrIdx].draw()
     
@@ -536,8 +528,8 @@ def calcLtrHeightSize( ltrHeight, cueOffsets, ringNum ):
     return ltrHeightThis
     
 #In each stream, predraw all 26 letters
-ltrHeight = 3 #Martini letters were 2.5deg high
-cueOffsets =   [1,3,5]    # [3,7,11.5]
+ltrHeight = 9 #Martini letters were 2.5deg high
+cueOffsets =   [-3,0,3]    # [3,7,11.5]
 maxStreams = numRings * max(streamsPerRingPossibilities)
 ltrStreams = list()
 for streami in xrange(maxStreams):
@@ -877,6 +869,7 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
             print(eachRespCorrect[respI],'\t', end='', file=dataFile) #eachRespCorrect0.  This is in order of responses
             print(whichStreamEachResp[respI], '\t', end='', file=dataFile) #whichStream0
             print(whichRespEachCue[respI], '\t', end='', file=dataFile) #whichRespEachCue0
+            print(responsePosRelative[respI], '\t', end='',file=dataFile) #responsePosRelative0
             #Ideally, determine temporal position of cue corresponding to this response, with help of whichStreamEachCue
             #But maybe there is not necessarily any unique mapping between them and the cuesTemporalPos. But, can rely on experiment design nums (cue1lag, etc.)
             #Are cuesTemporalPos always in the order of the responses? (with the proviso that those with same temporal pos will be different streams)
@@ -918,8 +911,6 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
                 print('-999\t-999','\t', end='', file=dataFile) #responseN,buttonN
                 whichStreamEachCue,whichStreamEachRes
                       
-    for respI in range(len(responses)):
-        print(responsePosRelative[respI], '\t', end='',file=dataFile) #responsePosRelative0
     #print('for cueI=',cueI,' cuesTemporalPos[cueI]=',cuesTemporalPos[cueI], ' answerCharacter=',answerCharacter, ' responses[cueI]=',responses[cueI], 
     #          ' responsePosRelative[cueI]= ',responsePosRelative[cueI], ' eachCorrect[cueI]=',eachCorrect[cueI], 'eachApproxCorrect[cueI]=', eachApproxCorrect[cueI])
     

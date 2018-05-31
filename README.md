@@ -10,8 +10,6 @@ This was created for Humby's honours thesis, so that she could run her first exp
 - whichStreamEachResp, whichStreamEachCue, whichRespEachCue
 Now I'm randomising the query order by , at trialHandler, randoming whichStreamEachCue, which simultaneously decides which streams are cued
 
-            
-- fix the OK of center lineup
 -columns out of whack, check out whether correct0 is meant to be letter or number
 
 - What's happening with counterbalancing of which stream respond to first in 3-target case? line 735

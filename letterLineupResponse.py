@@ -106,22 +106,24 @@ def convertXYtoNormUnits(XY,currUnits,win):
             #print("Converted ",XY," from ",currUnits," units first to pixels: ",xPix,yPix," then to norm: ",xNorm,yNorm)
     return xNorm, yNorm
 
-def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralRight,OKtextStim,OKrespZone,possibleResps,xOffset,clickSound,badClickSound):
+def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,leftCentralRight,OKtextStim,OKrespZone,possibleResps,xOffset,clickSound,badClickSound):
    if leftCentralRight == 0: #left
         constCoord = -1*xOffset
-        horizVert = 1 #vertical
    elif leftCentralRight == 1: #central
         constCoord = 0
-        OKrespZone.pos += [0,-.6]
-        OKtextStim.pos+= [0,-.6]
-        horizVert = 1 #horizontal
+        if not horizVert: #horizontal
+            OKrespZone.pos += [-.0,-.6]
+            OKtextStim.pos+= [-.0,-.6]
    elif leftCentralRight == 2: #right
         constCoord = xOffset
-        horizVert = 1 #vertical
-   
+   sideIndicatorCoord = .6*constCoord  #.77
+   if leftCentralRight==1: #central
+       sideIndicatorCoord = -.2
+       if random.randint(0, 1): #randomly pick which side, to avoid introducing any left/right bias
+        sideIndicatorCoord *= -1 
    myMouse.clickReset()
    sideIndicator = visual.Rect(myWin, width=.14, height=.04, fillColor=(1,1,1), fillColorSpace='rgb', lineColor=None, units='norm', autoLog=False)
-   sideIndicatorCoord = .77*constCoord
+
    sideIndicator.setPos( [sideIndicatorCoord, 0] )
    chosenLtr = visual.TextStim(myWin, font = 'sloan',colorSpace='rgb',color=(1,1,1),alignHoriz='center', alignVert='center',height=.4,units='norm',autoLog=False)
    if horizVert: #vertical array
@@ -156,8 +158,9 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,leftCentralR
             OKtextStim.setPos( chosenLtrPos )
             OKtextStim.draw()
         else:
-            if leftCentralRight != 1:
-                sideIndicator.draw()
+            pass
+            #if leftCentralRight != 1:
+            #    sideIndicator.draw()
             
         myWin.flip()
         #poll keyboard and mouse
@@ -251,12 +254,14 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
             okZoneX = 0
             if leftCentralRight_this == 1:
                 okZoneX = -.25 #Can't have it in center because then will occlude the lineup
-            OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.5, .5], pos=(okZoneX,0), sf=[0, 0], name='OKrespZone')
+            OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.25, .25], pos=(okZoneX,0), sf=[0, 0], name='OKrespZone')
             OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(okZoneX, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
             OKtextStim.setText('OK')
-            
+            horizVert = 0 #horizontal
+            if numLineups > 1:
+                horizVert = 1
             whichResp0, whichButtonResp0, expStop = \
-                    collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
+                    collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,horizVert,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
             responses.append(whichResp0)
             buttons.append(whichButtonResp0)
         numDone += 1 
