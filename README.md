@@ -7,8 +7,13 @@ This was created for Humby's honours thesis, so that she could run her first exp
 
 ** NOTES **
 
+### Randomisation of query order and which streams each cue
+
+- For two targets, whichStreamEachCue = [2,0] but whichStreamEachResp[1]==1 when should be 0 presumably
+
+- Now I'm randomising the query order by, at trialHandler, randoming whichStreamEachCue, which simultaneously decides which streams are cued. So, whichStreamEachResp should just inherit whichStreamEachCue I guess
+
 - whichStreamEachResp, whichStreamEachCue, whichRespEachCue
-Now I'm randomising the query order by , at trialHandler, randoming whichStreamEachCue, which simultaneously decides which streams are cued
 
 -columns out of whack, check out whether correct0 is meant to be letter or number
 

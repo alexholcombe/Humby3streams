@@ -30,7 +30,7 @@ descendingPsycho = True
 #same screen or external screen? Set scrn=0 if one screen. scrn=1 means display stimulus on second screen.
 #widthPix, heightPix
 quitFinder = False #if checkRefreshEtc, quitFinder becomes True
-autopilot=True
+autopilot=False
 demo=False #False
 exportImages= False #quits after one trial
 subject='Hubert' #user is prompted to enter true subject name
@@ -60,7 +60,7 @@ cueType = 'exogenousRing' #'endogenous':
 if cueType == 'endogenous':
     cueColor = [1,-1,-1]
 letterColor = [1.,1.,1.]
-cueRadius = 2.5 #6 deg, as in Martini E2    Letters should have height of 2.5 deg
+cueRadius = .3 #6 deg, as in Martini E2    Letters should have height of 2.5 deg
 
 widthPix= 1024 #monitor width in pixels of Agosta
 heightPix= 768 #800 #monitor height in pixels
@@ -108,7 +108,7 @@ if quitFinder:
 #letter size 2.5 deg
 numLettersToPresent = 24
 #For AB, minimum SOAms should be 84  because any shorter, I can't always notice the second ring when lag1.   71 in Martini E2 and E1b (actually he used 66.6 but that's because he had a crazy refresh rate of 90 Hz)
-SOAms = 82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
+SOAms = 400 #82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
 letterDurMs = 60 #60
 
 ISIms = SOAms - letterDurMs
@@ -343,7 +343,7 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1 
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[3] ]:    #tasks[2]
+    for task in [ tasks[2] ]:   
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
@@ -665,13 +665,12 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     if trial['task'] == 'T1':
         pass
     elif numToCue==2 and streamsPerRing==3:  #HUMBY HONOURS 2-target
-            whichStreamEachResp.append(0)
-            whichStreamEachResp.append(1)
+            whichStreamEachResp = deepcopy(trial['whichStreamEachCue'])
             whichRespEachCue.append(0)
             whichRespEachCue.append(1)
             corrAnsEachResp.append( np.array( streamLtrSequences[0][cuesTemporalPos[0]] )   )
             corrAnsEachResp.append( np.array( streamLtrSequences[1][cuesTemporalPos[1]] )   ) 
-            if len(cuesTemporalPos) > 1:
+            if len(set(cuesTemporalPos)) > 1:
                 print("WARNING: Expected only 1 temporal position for cues with this and 3 streams, but have ", len(cuesTemporalPos))
             for streamI in xrange( numToCue):
                 stream = trial['whichStreamEachCue'][streamI]
@@ -814,7 +813,7 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
         buttons = [0]*len(responsesAutopilot)
         if autopilot: print("autopilot and fake responses are:",responses)
 
-    print( "Inside handleAndScoreResponse corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp], " whichRespEachCue=",whichRespEachCue)
+    print( "Inside handleAndScoreResponse corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp], " whichRespEachCue=",whichRespEachCue, "whichStreamEachResp=",whichStreamEachResp)
     #for eachRespCorrect etc., tension between calculating %corr for each response position and separating them out by target
 
     #assume it's single- or multi-target thing where each target in a different stream
@@ -848,7 +847,7 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
             logging.error('Expected thisStream to have been cued only once')
         if np.alen(thisCue)==0: #thisStream seemingly not cued
             posThisResponse = -999
-            logging.error('thisStream seemingly not cued'); print("ERROR: thisStream seemingly not cued")
+            logging.warning('thisStream seemingly not cued'); print("ERROR: thisStream seemingly not cued")
         else: 
             thisCue = thisCue[0]
         cueTemporalPos = cuesTemporalPos[ thisCue ]
@@ -1059,7 +1058,11 @@ while nDone < totalTrials and expStop==False:
         numTrialsApproxCorrect += eachApproxCorrect.all()
 
         print('numTrialsEachRespCorrect=',numTrialsEachRespCorrect) #debugON
+        print('eachRespCorrect before padding =',eachRespCorrect)
+        eachRespCorrect = np.pad(eachRespCorrect,   (0, maxNumRespsWanted - len(eachRespCorrect)  ),'constant',constant_values=-99)  #This will pad eachRespCorrect out to maxNumRespsWanted, https://docs.scipy.org/doc/numpy/reference/generated/numpy.pad.html
+        print('eachRespCorrect after padding =',eachRespCorrect)
         numTrialsEachRespCorrect += eachRespCorrect
+        eachApproxCorrect = np.pad(eachApproxCorrect,   (0, maxNumRespsWanted - len(eachApproxCorrect)  ),'constant',constant_values=-99)  #This will pad eachApproxCorrect out to maxNumRespsWanted, https://docs.scipy.org/doc/numpy/reference/generated/numpy.pad.html
         numTrialsEachApproxCorrect += eachApproxCorrect
         if thisTrial['task'] =='AB' and cuesTemporalPos[0] != cuesTemporalPos[1]: #targets are not simultaneous
                 cue2lagIdx = list(possibleCue2lags).index(cue2lag)
