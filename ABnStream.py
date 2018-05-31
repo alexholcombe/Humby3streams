@@ -60,7 +60,7 @@ cueType = 'exogenousRing' #'endogenous':
 if cueType == 'endogenous':
     cueColor = [1,-1,-1]
 letterColor = [1.,1.,1.]
-cueRadius = .3 #6 deg, as in Martini E2    Letters should have height of 2.5 deg
+cueRadius = 1 #6 deg, as in Martini E2    Letters should have height of 2.5 deg
 
 widthPix= 1024 #monitor width in pixels of Agosta
 heightPix= 768 #800 #monitor height in pixels
@@ -343,7 +343,7 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1 
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[2] ]:   
+    for task in [ tasks[3] ]:   
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
@@ -675,8 +675,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             for streamI in xrange( numToCue):
                 stream = trial['whichStreamEachCue'][streamI]
                 cues[streamI].pos = calcStreamPos(streamsPerRing, stream, cueOffsets)
-                cueRadiusThis = 1.05*calcLtrHeightSize( ltrHeight, cueOffsets, ringNum=int(stream/streamsPerRing) )
-                cues[streamI].setRadius( cueRadiusThis )
+                cues[streamI].setRadius( cueRadius )
 
     else: #assume all len(cuesTemporalPos) streams cued at same time, with numRespsWanted to be reported, in random order.
         #For instance, if numRespsWanted = 1, then a random one is queried.
@@ -693,8 +692,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             #assume only one response per time (Only one stream queried per temporalPos). Cut this down to one below.
             posThis =  calcStreamPos(3, streamI, cueOffsets)
             cues[streamI].setPos( posThis )
-            cueRadiusThis = 1.05*calcLtrHeightSize( ltrHeight, cueOffsets, ringNum=int(streamI/streamsPerRing) )
-            cues[streamI].setRadius( cueRadiusThis )
+            cues[streamI].setRadius( cueRadius )
         print('whichStreamEachCue = ', trial['whichStreamEachCue'], ' cuesTemporalPos=',cuesTemporalPos)
         for cuei in xrange(numCues):  #work out correct answer for each cue
             whichStreamThisCue = trial['whichStreamEachCue'][cuei]

@@ -139,6 +139,7 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,le
    #waitingForClick means OK is on the screen, so can either click a lineup item, or click OK
    #'finished' exit this lineup, choice has been made
    expStop = False
+   print('leftCentralRight inside=',leftCentralRight, ' numLineupsToDraw=',numLineupsToDraw)
    while state != 'finished' and not expStop:
         #draw everything corresponding to this state
         drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,numLineupsToDraw,leftCentralRight = leftCentralRight)
@@ -259,7 +260,8 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
             OKtextStim.setText('OK')
             horizVert = 0 #horizontal
             if numLineups > 1:
-                horizVert = 1
+                horizVert = 1 #vertical
+            print('leftCentralRight_this = ',leftCentralRight_this, 'about to collect one', 'numLineups=',numLineups)
             whichResp0, whichButtonResp0, expStop = \
                     collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,horizVert,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
             responses.append(whichResp0)
@@ -318,15 +320,16 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
         print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
         print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
     
-    testVertical2Lineup = False
+    testVertical2Lineup = True
     if testVertical2Lineup:
         #Do vertical 2-lineup case
         responseDebug=False; responses = list(); responsesAutopilot = list();
         expStop = False
         numLineups = 2
         leftCentralRightFirst = 2
+        whichLineupEachResp = [1,2]
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                    doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRightFirst, autopilot)
+                    doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, whichLineupEachResp, autopilot)
         print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
         print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
     

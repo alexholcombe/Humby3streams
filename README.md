@@ -7,6 +7,10 @@ This was created for Humby's honours thesis, so that she could run her first exp
 
 ** NOTES **
 
+### 2 cues 3 lineups
+
+
+
 ### Randomisation of query order and which streams each cue
 
 - For two targets, whichStreamEachCue = [2,0] but whichStreamEachResp[1]==1 when should be 0 presumably
