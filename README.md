@@ -7,7 +7,10 @@ This was created for Humby's honours thesis, so that she could run her first exp
 
 ** NOTES **
 
+
 ### 2 cues 3 lineups
+
+The wrong cues are getting drawn. It's always drawing the first two cues but when their positions were set it was assumed each one was streams 0,1,2.  Is it ok to only draw 0 and 1, in the positions of the streams that need cuing?
 
 Updating drawResponseArrays with whichLineupEachResp and whichResp
 

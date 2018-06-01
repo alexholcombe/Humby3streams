@@ -340,10 +340,10 @@ stimList=[]
 possibleCueTemporalPositions =  np.array([6,7,8,9,10]) 
 tasks=['T1','AB','twoCued','allCued']
 numResponsesWanted=1; maxNumRespsWanted=3
-numRings = 1 
+numRings = 1
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[3] ]:   
+    for task in [ tasks[2] ]:   
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
@@ -425,8 +425,9 @@ print('timingBlips',file=dataFile)
 def calcStreamPos(numStreams, streami, cueOffsets):
     #streamOrNoise because noise coordinates have to be in deg, stream in pix
     #cueOffsets are in deg, for instance indicating the eccentricity of the streams/cues
-    noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
-    middle = int(numStreams/2.0 - .5) #index of the middle stream, e.g. 1 if there are 3
+    
+    #noiseOffsetKludge = 0.9 #Because the noise coords were drawn in pixels but the cue position is specified in deg, I must convert pix to deg for noise case
+    #middle = int(numStreams/2.0 - .5) #index of the middle stream, e.g. 1 if there are 3
     eccentricity = cueOffsets[streami] #e.g. cueOffsets[ 2-1-1 ]
     pos = (eccentricity,0)
     #pos = np.round(pos) #rounding or integer is a bad idea. Then for small radii, not equally spaced
@@ -447,9 +448,10 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
   #so that any timing problems occur just as often for every frame, always draw the letter and the cue, but simply draw it in the bgColor when it's not meant to be on
   cuesTimeToDraw = list([False])*len(cues) #if don't use this, for AB task, bg color T2 cue will be drawn on top of T1 cue
   
-  #cue graphics objects for all possible streams should be drawn (in bgColor or cueColor) in E N W S order
+  #cue graphics objects for all possible streams should be drawn (in bgColor or cueColor)
   for cue in cues: #might be at same time, or different times
-    cue.setLineColor( bgColor )
+    cue.setLineColor( cueColor ) #  cue.setLineColor( bgColor )
+    #cue.draw()
   for cueN in xrange(len(cuesTemporalPos)): #For each cue, see whether it is time to draw it
     thisCueFrameStart = cueFrames[cueN]
     if n>=thisCueFrameStart and n<thisCueFrameStart+cueDurFrames:
@@ -464,7 +466,7 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
     if cuesTimeToDraw[cueN] == True:  ##if don't use this, for AB task, bg color T2 cue will be drawn on top of T1 cue
         cues[cueN].draw()
   
-  for streami in xrange(numRings*streamsPerRing):
+  for streami in xrange(numRings*streamsPerRing): #Draw the items in the stream
     thisStream = ltrStreams[streami]
     thisLtrIdx = streamLtrSequences[streami][letterN] #which letter of the predecided sequence should be shown
     #setting the letter size (height) takes a lot of time, so each stream must be drawn in correct height before the trial starts
@@ -668,15 +670,18 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             whichStreamEachResp = deepcopy(trial['whichStreamEachCue'])
             whichRespEachCue.append(0)
             whichRespEachCue.append(1)
-            corrAnsEachResp.append( np.array( streamLtrSequences[0][cuesTemporalPos[0]] )   )
-            corrAnsEachResp.append( np.array( streamLtrSequences[1][cuesTemporalPos[1]] )   ) 
+            whichStreamFirstCue = trial['whichStreamEachCue'][0]
+            corrAnsEachResp.append( np.array( streamLtrSequences[whichStreamFirstCue][cuesTemporalPos[0]] )   )
+            whichStreamSecondCue = trial['whichStreamEachCue'][1]
+            corrAnsEachResp.append( np.array( streamLtrSequences[whichStreamSecondCue][cuesTemporalPos[1]] )   ) 
             if len(set(cuesTemporalPos)) > 1:
                 print("WARNING: Expected only 1 temporal position for cues with this and 3 streams, but have ", len(cuesTemporalPos))
-            for streamI in xrange( numToCue):
-                stream = trial['whichStreamEachCue'][streamI]
-                cues[streamI].pos = calcStreamPos(streamsPerRing, stream, cueOffsets)
-                cues[streamI].setRadius( cueRadius )
-
+            for streamI in xrange( numToCue): #There is one cue for each stream. Set the positions of those that need to be cued  
+                streamToCue = trial['whichStreamEachCue'][streamI]
+                cuePos = calcStreamPos(trial['streamsPerRing'], streamToCue, cueOffsets) 
+                cues[streamToCue].setPos(  cuePos  )
+                print('Set cue for stream ',streamToCue,' to position ', cuePos)
+                cues[streamToCue].setRadius( cueRadius )
     else: #assume all len(cuesTemporalPos) streams cued at same time, with numRespsWanted to be reported, in random order.
         #For instance, if numRespsWanted = 1, then a random one is queried.
         if len(set(cuesTemporalPos)) > 1:
