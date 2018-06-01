@@ -9,7 +9,7 @@ This was created for Humby's honours thesis, so that she could run her first exp
 
 ### 2 cues 3 lineups
 
-
+Updating drawResponseArrays with whichLineupEachResp and whichResp
 
 ### Randomisation of query order and which streams each cue
 

@@ -393,8 +393,8 @@ def numberToLetter(number): #0 = A, 25 = Z
 def letterToNumber(letter): #A = 0, Z = 25
     #if it's not really a letter, return -999
     #HOW CAN I GENERICALLY TEST FOR LENGTH. EVEN IN CASE OF A NUMBER THAT'S NOT PART OF AN ARRAY?
-    if letter in bannedLtrs:
-        print('letterToNumber: I wasnt expecting ',letter,' because it is in bannedLtrs')
+    #if letter in bannedLtrs:
+    #    print('letterToNumber: I wasnt expecting ',letter,' because it is in bannedLtrs')
 
     alpha = [i for i in string.ascii_uppercase]
     return( alpha.index(letter) )
@@ -524,11 +524,11 @@ def calcLtrHeightSize( ltrHeight, cueOffsets, ringNum ):
     ltrHeightBase = ltrHeight #*1/2.
     #eccentricity scale including exponent. Check Strasburger
     mFactor = 1/5.
-    ltrHeightThis = ltrHeightBase * mFactor*cueOffsets[ringNum]
+    ltrHeightThis = ltrHeight # ltrHeightBase * mFactor* abs(cueOffsets[ringNum])
     return ltrHeightThis
     
 #In each stream, predraw all 26 letters
-ltrHeight = 9 #Martini letters were 2.5deg high
+ltrHeight = 1 #Martini letters were 2.5deg high
 cueOffsets =   [-3,0,3]    # [3,7,11.5]
 maxStreams = numRings * max(streamsPerRingPossibilities)
 ltrStreams = list()
@@ -648,7 +648,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         letterSeqThisStream =  np.arange(0,26)
         numsForBannedLtrs =  [letterToNumber(l) for l in bannedLtrs]
         letterSeqThisStream = np.delete(letterSeqThisStream, numsForBannedLtrs)
-        print('numsForBannedLtrs=',numsForBannedLtrs, ' letterSeqThisStream=',letterSeqThisStream)
+        #print('numsForBannedLtrs=',numsForBannedLtrs, ' letterSeqThisStream=',letterSeqThisStream)
         np.random.shuffle(letterSeqThisStream)
         letterSeqThisStream = letterSeqThisStream[:numLtrsInStream]
         streamLtrSequences.append( letterSeqThisStream )
@@ -1019,7 +1019,7 @@ while nDone < totalTrials and expStop==False:
             possibleResps.remove(c)
         numLineups = thisTrial['numToCue']
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-            letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,numLineups,whichStreamEachResp,autopilot) 
+            letterLineupResponse.doLineup(myWin,bgColor,myMouse,clickSound,badKeySound,possibleResps,whichStreamEachResp,autopilot) 
     else:
         expStop,passThisTrial,responses,responsesAutopilot = \
                 stringResponse.collectStringResponse(thisTrial['numRespsWanted'],respPromptStim,respStim,acceptTextStim,myWin,clickSound,badKeySound,

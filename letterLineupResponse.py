@@ -49,39 +49,43 @@ def drawArray(myWin,bgColor,possibleResps,horizVert,constCoord,lightness,drawBou
     for i in xrange(len(possibleResps)):
         drawRespOption(myWin,bgColor,constCoord,horizVert,(lightness,lightness,lightness),drawBoundingBox,1,possibleResps,i)
 
-def drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,numLineupsToDraw,leftCentralRight):
+def mainCoordOfLineup(horizVert,Offset,lineup):
+    if lineup == 0:
+        coord = -Offset
+    elif lineup == 2:
+        coord = Offset
+    elif lineup==1:
+        coord= 0
+    return coord
+    
+def drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,whichLineupEachResp,whichResp):
     '''If numLineupsToDraw=2, draw array on both sides, with one side dimmed. If 3, also draw one in center
-    If leftRightCentral=0, collect response from left side, and draw other side dim. If =1, from right side. 2= central array.
+    If whichLineupEachResp[whichResp]=0, collect response from left side, and draw other side dim. If =1, from right side. 2= central array.
     possibleResps is usually an array of all the letters to populate the array with.
     xOffset is offset of center of response array relative to center of screen, in norm units
     '''
-    numResps = len(possibleResps)
     dimRGB = -.3
     drawBoundingBox = False #to debug to visualise response regions, make True
-    lightnessLCR = [bgColor,bgColor,bgColor] #lightness on left, central, right.
-    if numLineupsToDraw >= 2:
-        lightnessLCR[0] = dimRGB
-        lightnessLCR[2] = dimRGB
-    if numLineupsToDraw == 3:
-        lightnessLCR[1] = dimRGB
-
-    lightnessLCR[leftCentralRight] = 1 #Make the one being probed now bright
+#    lightnessLCR = [bgColor,bgColor,bgColor] #lightness on left, central, right.
+#    if len(whichLineupEachResp)  >= 2:
+#        lightnessLCR[0] = dimRGB
+#        lightnessLCR[2] = dimRGB
+#    if len(whichLineupEachResp)  == 3: 
+#        lightnessLCR[1] = dimRGB  #middle one
+#
+#    lineupToHighlight = whichLineupEachResp[whichResp]
+#    lightnessLCR[lineupToHighlight] = 1 #Make the one being probed now bright
     
-    if numLineupsToDraw == 1:
-        lightness = 1
-        if leftCentralRight == 0:
-            x = -xOffset
-        elif leftCentralRight == 2:
-            x = xOffset
-        elif leftCentralRight==1:
-            x = 0
-        drawArray(myWin,bgColor,possibleResps,horizVert, x, lightness,drawBoundingBox)
-        
-    if numLineupsToDraw>1: #draw two or three
-        drawArray(myWin,bgColor,possibleResps,horizVert, xOffset*-1, lightnessLCR[0],drawBoundingBox) #left
-        drawArray(myWin,bgColor,possibleResps,horizVert, xOffset, lightnessLCR[2],drawBoundingBox) #right
-        if numLineupsToDraw>2:
-            drawArray(myWin,bgColor,possibleResps,horizVert, 0, lightnessLCR[1],drawBoundingBox) #central
+    for lineup in whichLineupEachResp: #draw all the lineups
+        x = mainCoordOfLineup(horizVert,xOffset,lineup)
+        drawArray(myWin,bgColor,possibleResps,horizVert, x, dimRGB,drawBoundingBox)
+     
+    #highlight one by redrawing in stronger color
+    print('Inside drawResponseArrays, whichLineupEachResp=',whichLineupEachResp,' whichResp=',whichResp)
+    x = mainCoordOfLineup(horizVert,xOffset,whichLineupEachResp[whichResp])
+    lightness=1
+    drawArray(myWin,bgColor,possibleResps,horizVert, x, lightness,drawBoundingBox)
+
 
 def checkForOKclick(mousePos,respZone):
     OK = False
@@ -106,18 +110,20 @@ def convertXYtoNormUnits(XY,currUnits,win):
             #print("Converted ",XY," from ",currUnits," units first to pixels: ",xPix,yPix," then to norm: ",xNorm,yNorm)
     return xNorm, yNorm
 
-def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,leftCentralRight,OKtextStim,OKrespZone,possibleResps,xOffset,clickSound,badClickSound):
-   if leftCentralRight == 0: #left
+def collectOneLineupResponse(myWin,bgColor,myMouse,whichLineupEachResp,whichResp,horizVert,OKtextStim,OKrespZone,possibleResps,xOffset,clickSound,badClickSound):
+    #Use whichLineupEachResp to tell which lineups have to draw
+    #Use whichLineupEachResp[whichResp] to know which one to collect the response for
+   if whichLineupEachResp[whichResp] == 0: #left
         constCoord = -1*xOffset
-   elif leftCentralRight == 1: #central
+   elif whichLineupEachResp[whichResp] == 1: #central
         constCoord = 0
         if not horizVert: #horizontal
             OKrespZone.pos += [-.0,-.6]
             OKtextStim.pos+= [-.0,-.6]
-   elif leftCentralRight == 2: #right
+   elif whichLineupEachResp[whichResp] == 2: #right
         constCoord = xOffset
    sideIndicatorCoord = .6*constCoord  #.77
-   if leftCentralRight==1: #central
+   if whichLineupEachResp[whichResp]==1: #central
        sideIndicatorCoord = -.2
        if random.randint(0, 1): #randomly pick which side, to avoid introducing any left/right bias
         sideIndicatorCoord *= -1 
@@ -134,23 +140,22 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,le
     chosenLtrPos = [0,sideIndicatorCoord]
     chosenLtr.setPos( chosenLtrPos )  #big drawing of chosen letter, offset from lineup
    
-   whichResp = -1
    state = 'waitingForFirstClick' 
    #waitingForClick means OK is on the screen, so can either click a lineup item, or click OK
    #'finished' exit this lineup, choice has been made
    expStop = False
-   print('leftCentralRight inside=',leftCentralRight, ' numLineupsToDraw=',numLineupsToDraw)
+   print('whichLineupEachResp[whichResp] inside collectOneLineupResponse=',whichLineupEachResp[whichResp], 'whichResp=',whichResp, 'whichLineupEachResp=',whichLineupEachResp)
    while state != 'finished' and not expStop:
-        #draw everything corresponding to this state
-        drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,numLineupsToDraw,leftCentralRight = leftCentralRight)
+        #draw everything corresponding to this state  
+        drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,whichLineupEachResp,whichResp)
         if state == 'waitingForClick':
             #draw selected one in green, and bigly
             selectedColor = (-1,1,-1) #green
             buttonThis = np.where(pressed)[0] #assume only one button can be recorded as pressed
             if buttonThis == 0:
                 selectedColor = (1,1,-1) #yellow for low confidence,
-            drawRespOption(myWin,bgColor,constCoord,horizVert,selectedColor,False,1.5,possibleResps,whichResp)
-            chosenLtr.setText(possibleResps[whichResp])
+            drawRespOption(myWin,bgColor,constCoord,horizVert,selectedColor,False,1.5,possibleResps,thisResponseIdx)
+            chosenLtr.setText(possibleResps[thisResponseIdx])
             chosenLtr.setColor( selectedColor )
             chosenLtr.draw()
             #draw respZone and big OK at same place as big offset letter
@@ -204,13 +209,13 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,le
                         relToBtm = mousePos[1] - vertBounds[0] #mouse coordinates go up from -1 to +1
                         relToLeft = mousePos[0] - horizBounds[0]
                         if horizVert: #vertical
-                            whichResp = int (relToBtm / h)
+                            thisResponseIdx = int (relToBtm / h)
                             #change from relToBtm to relative to top
-                            whichResp = len(possibleResps) - 1- whichResp 
+                            thisResponseIdx = len(possibleResps) - 1- thisResponseIdx 
                         else: #horizontal
-                            whichResp = int(relToLeft / w)
-                            #print("whichResp from left hopefully = ",whichResp, " corresponding to ", possibleResps[whichResp])
-                        #print("whichResp from top = ",whichResp, "xOffsetThis=",xOffsetThis, " About to redraw and draw one item in red")
+                            thisResponseIdx = int(relToLeft / w)
+                            #print("thisResponseIdx from left hopefully = ",thisResponseIdx, " corresponding to ", possibleResps[thisResponseIdx])
+                        #print("thisResponseIdx from top = ",thisResponseIdx, "xOffsetThis=",xOffsetThis, " About to redraw and draw one item in red")
                         lastValidClickButtons = deepcopy(pressed) #record which buttons pressed. Have to make copy, otherwise will change when pressd changes later
                         #print('lastValidClickButtons=',lastValidClickButtons)
                         state = 'waitingForClick' 
@@ -221,7 +226,7 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,le
                 if key in ['ESCAPE']:
                     expStop = True
                     #noResponseYet = False
-   response = possibleResps[whichResp]
+   response = possibleResps[thisResponseIdx]
    
    #Determine which button was pressed
    whichPressed = np.where(lastValidClickButtons)[0]
@@ -234,8 +239,8 @@ def collectOneLineupResponse(myWin,bgColor,myMouse,numLineupsToDraw,horizVert,le
    #print('Returning with response=',response,'button=',button,' expStop=',expStop)
    return response, button, expStop
         
-def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLineups,whichLineupEachResp,autopilot):
-    #whichLineupEachResp: 0 is left side, 1 is central, 2 is right
+def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,whichLineupEachResp,autopilot):
+    #whichLineupEachResp up to [0,1,2] meaning in vertical configuration: left, middle, and right.   Or could be [2,1,0] indicating a different order to query.
     
     expStop = False
     passThisTrial = False
@@ -246,24 +251,23 @@ def doLineup(myWin,bgColor,myMouse,clickSound,badClickSound,possibleResps,numLin
     xOffset = 0.7
     
     numDone = 0
-    while numDone < numLineups:
+    while numDone < len(whichLineupEachResp):
         if autopilot: #I haven't bothered to make autopilot display the response screen
             responsesAutopilot.append('Z')
         else:
             #Draw arrays again, with some (if more than one) dim, to collect the other response
-            leftCentralRight_this = whichLineupEachResp[numDone]
             okZoneX = 0
-            if leftCentralRight_this == 1:
+            if whichLineupEachResp[numDone] == 1: #central
                 okZoneX = -.25 #Can't have it in center because then will occlude the lineup
             OKrespZone = visual.GratingStim(myWin, tex="sin", mask="gauss", texRes=64, units='norm', size=[.25, .25], pos=(okZoneX,0), sf=[0, 0], name='OKrespZone')
             OKtextStim = visual.TextStim(myWin, font = 'sloan',pos=(okZoneX, 0),colorSpace='rgb',color=(-1,-1,-1),alignHoriz='center', alignVert='center',height=.13,units='norm',autoLog=False)
             OKtextStim.setText('OK')
             horizVert = 0 #horizontal
-            if numLineups > 1:
+            if len(whichLineupEachResp) > 1:
                 horizVert = 1 #vertical
-            print('leftCentralRight_this = ',leftCentralRight_this, 'about to collect one', 'numLineups=',numLineups)
+            print('whichLineupEachResp[numDone]  = ',whichLineupEachResp[numDone] , 'about to collect one, whichResp=',numDone)
             whichResp0, whichButtonResp0, expStop = \
-                    collectOneLineupResponse(myWin,bgColor,myMouse,numLineups,horizVert,leftCentralRight_this,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
+                    collectOneLineupResponse(myWin,bgColor,myMouse,whichLineupEachResp,numDone,horizVert,OKtextStim,OKrespZone,possibleResps, xOffset, clickSound, badClickSound)
             responses.append(whichResp0)
             buttons.append(whichButtonResp0)
         numDone += 1 
@@ -308,15 +312,22 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
     passThisTrial = False
     myMouse = event.Mouse()
 
+    testDrawResponseArrays = False
+    if testDrawResponseArrays:
+        horizVert=1; xOffset=-.7; whichLineupEachResp=[0,1,2]; whichResp=1
+        while not event.getKeys():
+            drawResponseArrays(myWin,bgColor,horizVert,xOffset,possibleResps,whichLineupEachResp,whichResp)
+            myWin.flip()
+        print('End test of drawResponseArrays')
+    
     testHorizontalLineup = False
     if testHorizontalLineup:
         #Do horizontal lineups
         responseDebug=False; responses = list(); responsesAutopilot = list();
         expStop = False
-        numLineups = 1
-        leftCentralRight = 2 #central
+        whichLineupEachResp = [1]  #central
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                    doLineup(myWin, bgColor, myMouse, clickSound, badClickSound, possibleResps, numLineups, leftCentralRight, autopilot)
+                    doLineup(myWin, bgColor, myMouse, clickSound, badClickSound, possibleResps, whichLineupEachResp, autopilot)
         print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
         print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
     
@@ -325,21 +336,21 @@ if __name__=='__main__':  #Running this file directly, must want to test functio
         #Do vertical 2-lineup case
         responseDebug=False; responses = list(); responsesAutopilot = list();
         expStop = False
-        numLineups = 2
-        leftCentralRightFirst = 2
-        whichLineupEachResp = [1,2]
+        whichLineupEachResp = [0,1]
+        print('Testing two vertical lineups, specifically: ',whichLineupEachResp)
         expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                    doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, whichLineupEachResp, autopilot)
+                    doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, whichLineupEachResp, autopilot)
         print('autopilot=',autopilot, ' responsesAutopilot =', responsesAutopilot)
         print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses)
     
     #Do vertical 3-lineup case
     responseDebug=False; responses = list(); responsesAutopilot = list();
+    print('Testing three vertical lineups')
     expStop = False
     numLineups = 3
     whichLineupEachResp = [2,1,0]
     expStop,passThisTrial,responses,buttons,responsesAutopilot = \
-                doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, numLineups, whichLineupEachResp, autopilot)
+                doLineup(myWin, bgColor,myMouse, clickSound, badClickSound, possibleResps, whichLineupEachResp, autopilot)
     
     print('autopilot=',autopilot, 'responses=',responses)
     print('expStop=',expStop,' passThisTrial=',passThisTrial,' responses=',responses, ' responsesAutopilot =', responsesAutopilot)
