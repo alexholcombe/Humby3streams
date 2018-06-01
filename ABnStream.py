@@ -343,7 +343,7 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[3] ]:   
+    for task in [ tasks[3],tasks[2] ]:
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
@@ -663,7 +663,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     corrAnsEachResp = list(); whichStreamEachCue = list(); whichStreamEachResp = list(); whichRespEachCue = list()
     if trial['task'] == 'T1':
         pass
-    elif numToCue==2 and streamsPerRing==3:  #HUMBY HONOURS 2-target
+    elif trial['numToCue']==2 and trial['streamsPerRing']==3:  #HUMBY HONOURS 2-target
             whichStreamEachResp = deepcopy(trial['whichStreamEachCue'])
             whichRespEachCue.append(0)
             whichRespEachCue.append(1)
@@ -692,7 +692,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         for streamI in xrange( numRings*streamsPerRing ): #Drawing the cues in the location they're supposed to be in
             #assume each cue the succeeding stream (usually all cues same temporal position)
             #assume only one response per time (Only one stream queried per temporalPos). Cut this down to one below.
-            posThis =  calcStreamPos(3, streamI, cueOffsets)
+            posThis =  calcStreamPos(trial['streamsPerRing'], streamI, cueOffsets)
             cues[streamI].setPos( posThis )
             cues[streamI].setRadius( cueRadius )
         print('whichStreamEachCue = ', trial['whichStreamEachCue'], ' cuesTemporalPos=',cuesTemporalPos)
