@@ -335,7 +335,7 @@ def roundToNearestY(x,y): #round x to nearest y, e.g. rounding 65 to nearest 30 
 
 #SETTING THE CONDITIONS
     
-#For the dual-stream simultaneous target
+#For the tri-stream two or three targets
 stimList=[]
 possibleCueTemporalPositions =  np.array([6,7,8,9,10]) 
 tasks=['T1','AB','twoCued','allCued']
@@ -343,7 +343,7 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[2] ]:   
+    for task in [ tasks[3] ]:   
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
@@ -449,9 +449,6 @@ def oneFrameOfStim( n,cues,streamLtrSequences,cueDurFrames,letterDurFrames,ISIfr
   cuesTimeToDraw = list([False])*len(cues) #if don't use this, for AB task, bg color T2 cue will be drawn on top of T1 cue
   
   #cue graphics objects for all possible streams should be drawn (in bgColor or cueColor)
-  for cue in cues: #might be at same time, or different times
-    cue.setLineColor( cueColor ) #  cue.setLineColor( bgColor )
-    #cue.draw()
   for cueN in xrange(len(cuesTemporalPos)): #For each cue, see whether it is time to draw it
     thisCueFrameStart = cueFrames[cueN]
     if n>=thisCueFrameStart and n<thisCueFrameStart+cueDurFrames:
@@ -676,7 +673,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             corrAnsEachResp.append( np.array( streamLtrSequences[whichStreamSecondCue][cuesTemporalPos[1]] )   ) 
             if len(set(cuesTemporalPos)) > 1:
                 print("WARNING: Expected only 1 temporal position for cues with this and 3 streams, but have ", len(cuesTemporalPos))
-            for streamI in xrange( numToCue): #There is one cue for each stream. Set the positions of those that need to be cued  
+            for streamI in xrange( numToCue): #There is one cue for each stream. Set the positions of those that need to be cued, positions of others don't matter 
                 streamToCue = trial['whichStreamEachCue'][streamI]
                 cuePos = calcStreamPos(trial['streamsPerRing'], streamToCue, cueOffsets) 
                 cues[streamToCue].setPos(  cuePos  )
