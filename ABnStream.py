@@ -343,7 +343,7 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[3],tasks[2] ]:
+    for task in [ tasks[2],tasks[3] ]:
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
@@ -412,13 +412,13 @@ if printInOrderOfResponses:
        dataFile.write('resp'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
        dataFile.write('button'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
        dataFile.write('cuePos'+str(i)+'\t')
-       dataFile.write('answer'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
-       dataFile.write('correct'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
-       dataFile.write('whichStream'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
+       dataFile.write('ansResp'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
+       dataFile.write('corrResp'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
+       dataFile.write('whichStreamResp'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
        dataFile.write('whichRespCue'+str(i)+'\t')   #have to use write to avoid ' ' between successive text, at least until Python 3
-       dataFile.write('responsePosRelative'+str(i)+'\t')
+       dataFile.write('respPosRelative'+str(i)+'\t')
 for i in range(numRings * max(streamsPerRingPossibilities)):
-    dataFile.write('streamLtrSequence'+str(i)+'\t')
+    dataFile.write('ltrSequenceStream'+str(i)+'\t')
 print('timingBlips',file=dataFile)
 #end of header
 
@@ -825,7 +825,7 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
         if corrAnsEachResp[respI] == letterToNumber( responses[respI] ):
             eachRespCorrect[respI] = 1 #doesn't compensate for different response query orders
         thisStream = whichStreamEachResp[respI]
-        thisRespLetterSeq = np.array([ltrStreams[thisStream][item].text for item in streamLtrSequences[thisStream]])
+        thisRespLetterSeq = np.array([ltrStreams[thisStream][item].text for item in streamLtrSequences[thisStream]]) #stimulus letter sequence for stream meant to respond to for respI
         #print(thisRespLetterSeq)
         thisResponse = responses[respI]
         #print('thisResponse: '+ str(thisResponse))
@@ -862,7 +862,7 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
             #header should be resp0, eachRespCorrect0, whichStream0,
             print(responses[respI], '\t', end ='', file=dataFile) #respN
             print(buttons[respI],'\t', end='', file=dataFile) #buttonN
-            answerCharacter = thisRespLetterSeq[cueTemporalPos]
+            answerCharacter =  numberToLetter( corrAnsEachResp[respI] ) # thisRespLetterSeq[cueTemporalPos] #for answer0
             print(cueTemporalPos, '\t', end = '', file = dataFile)
             print(answerCharacter, '\t', end='', file=dataFile) #answer0
             print(eachRespCorrect[respI],'\t', end='', file=dataFile) #eachRespCorrect0.  This is in order of responses
