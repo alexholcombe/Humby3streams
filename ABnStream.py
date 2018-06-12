@@ -30,7 +30,7 @@ descendingPsycho = True
 #same screen or external screen? Set scrn=0 if one screen. scrn=1 means display stimulus on second screen.
 #widthPix, heightPix
 quitFinder = False #if checkRefreshEtc, quitFinder becomes True
-autopilot=False
+autopilot=True
 demo=False #False
 exportImages= False #quits after one trial
 subject='Hubert' #user is prompted to enter true subject name
@@ -108,7 +108,7 @@ if quitFinder:
 #letter size 2.5 deg
 numLettersToPresent = 24
 #For AB, minimum SOAms should be 84  because any shorter, I can't always notice the second ring when lag1.   71 in Martini E2 and E1b (actually he used 66.6 but that's because he had a crazy refresh rate of 90 Hz)
-SOAms = 400 #82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
+SOAms = 82# 400 #82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
 letterDurMs = 60 #60
 
 ISIms = SOAms - letterDurMs
@@ -343,22 +343,20 @@ numResponsesWanted=1; maxNumRespsWanted=3
 numRings = 1
 streamsPerRingPossibilities = np.array([3]) #this needs to be listed here so when print header, can work out the maximum value
 for streamsPerRing in streamsPerRingPossibilities:
-    for task in [ tasks[2],tasks[3] ]:
+    for task in [tasks[2], tasks[3] ]:
        if task=='AB':
             numResponsesWanted=2; numToCue=2
        elif task=='allCued':
             numToCue = streamsPerRing
             numResponsesWanted = streamsPerRing #Humby 3-target honours
-            print('351 numResponsesWanted=',numResponsesWanted)
        elif task=='twoCued':
             numToCue = 2
             numRespsWanted = 2
        print('task=',task)
        #setting targetLeftRightIfOne constant because which stream randomisation taken care of by baseAngle. Stream0 will always be the one cued, but it'll be in a random position
-       for targetLeftRightIfOne in  ['right']: # ['left','right']: #If single target, should it be on the left or the right?
-        randomlyAssignCuesToStreams = True
+       for targetLeftRightIfOne in ['left']:  # ['left','right']: #If single target, should it be on the left or the right?
         for cueTemporalPos in possibleCueTemporalPositions:
-            for firstRespLRifTwo in ['left']:  #If dual target and lineup response, should left one or right one be queried first?
+            for firstRespLRifTwo in ['left','right']:  #If dual target and lineup response, should left one or right one be queried first?
                 #Jen's experiment response order is counterbalanced by the whichStreamEachCue possibilties below
                 if task == 'allCued':
                     for whichStreamEachCue in [ [0,1,2], [0,2,1],  [1,0,2],[1,2,0],   [2,0,1], [2,1,0] ]:
@@ -621,16 +619,16 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     #   logging, bgColor
     #
     streamsPerRing = trial['streamsPerRing']
-    print("streamsPerRing = ",trial['streamsPerRing'], 'task=',task)
-    if task != 'allCued':
+    print("streamsPerRing = ",trial['streamsPerRing'], 'trial[task]=',trial['task'])
+    if trial['task'] != 'allCued':
         print('targetLeftRightIfOne=',trial['targetLeftRightIfOne'], 'cue0temporalPos=',trial['cue0temporalPos'])
     
     #set up which temporal positions are cued
     cuesTemporalPos = [] #will contain the positions of all the cues (targets)
-    if task =='T1': #target on only one side will be task 'T1' so only one cue
+    if trial['task'] =='T1': #target on only one side will be task 'T1' so only one cue
         numTargets = 1
         cuesTemporalPos.append(trial['cue0temporalPos'])
-    elif task=='AB': #AB
+    elif trial['task']=='AB': #AB
         cuesTemporalPos.append(trial['cue0temporalPos'])
         cuesTemporalPos.append(trial['cue0temporalPos']+thisTrial['cue1lag'])
         numTargets = 2
@@ -661,6 +659,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     #whichStreamEachCue indicate which stream each cue refers to. These can be in different order than whichStreamEachResp, because randomised which queried first
     #whichStreamEachResp is which stream each response refers to (which stream was queried for 0th response, 1st response, etc)
     corrAnsEachResp = list(); whichStreamEachCue = list(); whichStreamEachResp = list(); whichRespEachCue = list()
+    print('trial[whichStreamEachCue] = ',trial['whichStreamEachCue'])
     if trial['task'] == 'T1':
         pass
     elif trial['numToCue']==2 and trial['streamsPerRing']==3:  #HUMBY HONOURS 2-target
@@ -673,7 +672,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
             corrAnsEachResp.append( np.array( streamLtrSequences[whichStreamSecondCue][cuesTemporalPos[1]] )   ) 
             if len(set(cuesTemporalPos)) > 1:
                 print("WARNING: Expected only 1 temporal position for cues with this and 3 streams, but have ", len(cuesTemporalPos))
-            for streamI in xrange( numToCue): #There is one cue for each stream. Set the positions of those that need to be cued, positions of others don't matter 
+            for streamI in xrange( trial['numToCue']): #There is one cue for each stream. Set the positions of those that need to be cued, positions of others don't matter
                 streamToCue = trial['whichStreamEachCue'][streamI]
                 cuePos = calcStreamPos(trial['streamsPerRing'], streamToCue, cueOffsets) 
                 cues[streamToCue].setPos(  cuePos  )
@@ -797,7 +796,7 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
     #end of big stimulus loop
     myWin.setRecordFrameIntervals(False);
 
-    if task=='T1':
+    if trial['task']=='T1':
         respPromptStim.setText('Which letter was circled?',log=False)
     else:
         respPromptStim.setText('Which letters were circled?',log=False)
