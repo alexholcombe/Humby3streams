@@ -358,8 +358,8 @@ for streamsPerRing in streamsPerRingPossibilities:
        for targetLeftRightIfOne in  ['right']: # ['left','right']: #If single target, should it be on the left or the right?
         randomlyAssignCuesToStreams = True
         for cueTemporalPos in possibleCueTemporalPositions:
-            for firstRespLRifTwo in ['left','right']:  #If dual target and lineup response, should left one or right one be queried first?
-                #Don't even try to counterbalance response order in Jen's experiment, because 3 possible first values for 3 targets and 6 orders and also two for two targets
+            for firstRespLRifTwo in ['left']:  #If dual target and lineup response, should left one or right one be queried first?
+                #Jen's experiment response order is counterbalanced by the whichStreamEachCue possibilties below
                 if task == 'allCued':
                     for whichStreamEachCue in [ [0,1,2], [0,2,1],  [1,0,2],[1,2,0],   [2,0,1], [2,1,0] ]:
                         stimList.append(         
