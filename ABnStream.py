@@ -84,7 +84,7 @@ msg= 'pixelperdegree=' + str( round(pixelperdegree,2) )
 logging.info(pixelperdegree)
  
 # create a dialog from dictionary 
-infoFirst = { 'Do staircase (only)': False, 'Check refresh etc':False, 'Fullscreen (timing errors if not)': fullscr, 'Screen refresh rate': refreshRate }
+infoFirst = { 'Do staircase (only)': False, 'Check refresh etc':True, 'Fullscreen (timing errors if not)': fullscr, 'Screen refresh rate': refreshRate }
 OK = gui.DlgFromDict(dictionary=infoFirst, 
     title='AB or dualstream experiment OR staircase to find thresh noise level for T1 performance criterion', 
     order=['Do staircase (only)', 'Check refresh etc', 'Fullscreen (timing errors if not)'], 
@@ -687,7 +687,6 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         corrAnsEachCue = []  #because order of responses will be different than order of cues
         numCues = len(cuesTemporalPos)
         whichStreamEachResp = deepcopy(trial['whichStreamEachCue'])
-        print('#697 whichStreamEachCue=',trial['whichStreamEachCue'], 'whichStreamEachResp=',whichStreamEachResp)
         for streamI in xrange( numRings*streamsPerRing ): #Drawing the cues in the location they're supposed to be in
             #assume each cue the succeeding stream (usually all cues same temporal position)
             #assume only one response per time (Only one stream queried per temporalPos). Cut this down to one below.
@@ -714,22 +713,21 @@ def do_RSVP_stim(numRings,streamsPerRing, trial, proportnNoise,trialN):
         whichStreamEachResp = whichStreamEachResp[ :trial['numRespsWanted'] ] #reduce to actual number of responses
         corrAnsEachResp = corrAnsEachResp[ :trial['numRespsWanted'] ]  #reduce to actual number of responses.
         whichRespEachCue = whichRespEachCue[ :trial['numRespsWanted'] ]  #reduce to actual number of responses.
-    print('#724 whichStreamEachResp=',whichStreamEachResp, ' numRespsWanted=',trial['numRespsWanted'])
     #debug printouts
     #print( 'streamLtrSequences[0]=',[numberToLetter(x) for x in streamLtrSequences[0]] )
     #if trial['numStreams']>1:
     #    print( 'streamLtrSequences[1]=',[numberToLetter(x) for x in streamLtrSequences[1]] )
     firstCueStream = trial['whichStreamEachCue'][0]
     firstCueItem = streamLtrSequences[firstCueStream][cuesTemporalPos[0]]
-    print( "corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp],  "First cue cues stream",firstCueStream,   " and letter ",numberToLetter(firstCueItem), end='')
+    #print( "corrAnsEachResp=", [numberToLetter(x) for x in corrAnsEachResp],  "First cue cues stream",firstCueStream,   " and letter ",numberToLetter(firstCueItem), end='')
     if trial['numToCue'] > 1:
         secondCueStream = trial['whichStreamEachCue'][1]
         secondCueItem = streamLtrSequences[secondCueStream][cuesTemporalPos[0]]
-        print(  "  2nd cue cues stream",secondCueStream, " and (if simultaneous) letter ",numberToLetter(secondCueItem) )
+        #print(  "  2nd cue cues stream",secondCueStream, " and (if simultaneous) letter ",numberToLetter(secondCueItem) )
         if trial['numToCue']>2:
             thirdCueStream = trial['whichStreamEachCue'][2]
             thirdCueItem = streamLtrSequences[thirdCueStream][cuesTemporalPos[0]]
-            print(  "  3rd cue cues stream",thirdCueStream, " and letter (if simultaneous) ",numberToLetter(thirdCueItem) )
+            #print(  "  3rd cue cues stream",thirdCueStream, " and letter (if simultaneous) ",numberToLetter(thirdCueItem) )
     else: print('')
     #end debug printouts
             
@@ -875,6 +873,7 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
             respI+=1
             print('-999','\t', end='', file=dataFile) #response N/A for this trial
             print('-999','\t', end='', file=dataFile) #button N/A for this trial
+            print('-999','\t',end='',  file=dataFile)  #cueTemporalPos N/A for this trial
             if respI < len(corrAnsEachResp): #more answers than responses stored, to correspond to other streams to allow analysis of swaps, using whichStreamEachResp
                 answerCharacter = numberToLetter( corrAnsEachResp[respI] )
                 print(answerCharacter, '\t', end='', file=dataFile) #answerN
@@ -884,7 +883,8 @@ def handleAndScoreResponse(passThisTrial,responses,buttons,responsesAutopilot,ta
                 print(whichStreamEachResp[respI], '\t', end='', file=dataFile) #whichStreamN
             else: print('-999','\t', end='', file=dataFile) #whichStreamN N/A
             print('-999','\t', end='', file=dataFile) #whichRespEachCue N/A
-        
+            print('-999','\t',end='',  file=dataFile)  #respPosRelatuive N/A for this trial
+
     else: #print in order of cues
         #print('whichStreamEachCue=',whichStreamEachCue,' whichStreamEachResp=',whichStreamEachResp,' corrAnsEachResp=',corrAnsEachResp, ' whichStreamEachCue=',whichStreamEachCue,'whichRespEachCue same as whichStreamEachResp')
         #responses, corrAnsEachResp, whichStreamEachResp will still line up
