@@ -1,0 +1,117 @@
+---
+  title: "Analyze an entire experiment"
+author: "Alex Holcombe"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+  fig_caption: yes
+fig_width: 7
+fig_height: 6 
+vignette: >
+  %\VignetteIndexEntry{Analyze an entire experiment}
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteEncoding{UTF-8}
+---
+  
+  ```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+rawDataPath<- "../pilotJen1/rawData"
+dataFileName<- "Hubert_14Jun2018_15-24_150soams.txt" # "auto_14Jun2018_15-04.txt"
+fileWithPath<- file.path(rawDataPath,dataFileName)
+
+df <-read.table(fileWithPath,sep="\t", header=TRUE)  #consider read_tsv from tidyverse readr
+library('readr')#install.packages('readr')
+df <-read_tsv(fileWithPath)  #read_tsv from tidyverse readr has advantage of not having padding spaces
+#in subject and another column
+
+library(dplyr)
+
+addMyColumns<- function(df) {
+  #correct etc are recorded in terms of response number, not stream number. Need to recover stream number
+  df <- df %>% mutate( numTargets =   (resp2 !="-999") ) #True if 3 targets, False if 2 targets
+  df$numTargets <- as.numeric(df$numTargets) + 2
+  
+  #Calculate corrStream0, corrStream1, corrStream2
+  df<-df %>% mutate(corrStrm0 = case_when( whichStreamResp0==0 ~ corrResp0,
+                                           whichStreamResp1==0 ~ corrResp1,
+                                           whichStreamResp2==0 ~ corrResp2,
+                                           TRUE ~ NA_real_ ) )
+  df<-df %>% mutate(corrStrm1 = case_when( whichStreamResp0==1 ~ corrResp0,
+                                           whichStreamResp1==1 ~ corrResp1,
+                                           whichStreamResp2==1 ~ corrResp2,
+                                           TRUE ~ NA_real_ ) )
+  df<-df %>% mutate(corrStrm2 = case_when( whichStreamResp0==2 ~ corrResp0,
+                                           whichStreamResp1==2 ~ corrResp1,
+                                           whichStreamResp2==2 ~ corrResp2,
+                                           TRUE ~ NA_real_ ) )
+  #table(df$corrStrm0,df$numTargets)
+  #table(df$whichStreamResp0,df$corrResp0)
+  #table(df$whichStreamResp0,df$corrResp1)
+  #table(df$whichStreamResp2,df$corrResp2)
+  print( table(df$corrStrm1,df$numTargets) )
+  
+  df<-df %>% mutate(pCorrAll = case_when(numTargets == 2 ~ (corrResp0 + corrResp1) / 2,
+                                         numTargets == 3 ~ (corrResp0+corrResp1+corrResp2) / 3,
+                                         TRUE ~ -900))
+  return (df)
+}
+dg<-addMyColumns(df)
+
+table(df$numTargets,df$pCorrAll)
+
+df %>% group_by(numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+
+#files <- dir(path=rawDataPath,pattern='.txt')  #find all data files in this directory
+files<- c("Hubert_14Jun2018_15-24_150soams.txt","Hubert_14Jun2018_15-45_130soams.txt","Hubert_14Jun2018_15-56_140soams.txt")
+SOA<- c(150,130,140)
+
+dfAll<-data.frame()
+for (i in 1:length(files)) { #read in each file
+  fileThis<- file.path(rawDataPath,files[i])
+  rawDataLoad=tryCatch(
+    read_tsv(fileThis),  #read.table(fileThis,sep='\t',header=TRUE),
+    error=function(e) {
+      stop( paste0("ERROR reading the file ",fileThis," :",e) )
+    } )
+  apparentSubjectName <- strsplit(files[i],split="_")[[1]][1]
+  subjectName<- rawDataLoad$subject[[1]]
+  if (apparentSubjectName != subjectName) {
+    stop( paste0("WARNING apparentSubjectName '",apparentSubjectName,
+                 "' from filename does not match subjectName inside file'",subjectName,"'") )
+  }
+  else { cat(paste0(' Subject ',apparentSubjectName,' read in')) }
+  rawDataLoad$file <- files[i]
+  
+  rawDataLoad$SOA<- SOA[i]
+  #Eventually, try to integrate with eye movements file here
+  
+  tryCatch(
+    dfAll<-rbind(dfAll,rawDataLoad), #if fail to bind new with old,
+    error=function(e) { #Give feedback about how the error happened
+      cat(paste0("Tried to merge but error:",e) )
+    } )
+}
+table(dfAll$subject)
+dfAll<-addMyColumns(dfAll)
+dfAll %>% group_by(SOA,numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+#need to melt corrStrm0,1,2 to make into long format so ggplot can plot all 3
+library(tidyr)
+dl<-dfAll %>% 
+  gather(strm, corr, corrStrm0:corrStrm2) 
+dl[,39:42]
+
+library(ggplot2)
+g<-ggplot(dl, aes(x=SOA,color=(numTargets),y=corr)) + facet_grid(strm~numTargets)
+g<-g+ stat_summary(geom="point",fun.y=mean) +
+  stat_summary(fun.data="mean_cl_boot",geom="errorbar",width=.3,conf.int=.95) #, width=5,size=1) 
+g
+
+
+
