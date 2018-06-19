@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
   fig_caption: yes
-fig_width: 7
+fig_width: 12
 fig_height: 6 
 vignette: >
   %\VignetteIndexEntry{Analyze an entire experiment}
@@ -115,6 +115,7 @@ for (i in 1:length(files)) { #read in each file
       cat(paste0("Tried to merge but error:",e) )
     } )
 }
+
 table(dfAll$subject,dfAll$SOA)
 
 ```
@@ -122,6 +123,8 @@ table(dfAll$subject,dfAll$SOA)
 Add columns and show summary proportion correct
 ```{r}
 dfAll<-addMyColumns(dfAll)
+write_excel_csv(dfAll,"dfAll.csv")
+
 dfAll %>% group_by(SOA,numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
 ```
 
@@ -139,7 +142,7 @@ Plot proportion correct
 ```{r}
 
 library(ggplot2)
-g<-ggplot(dl, aes(x=SOA,color=(numTargets),y=corr)) + facet_grid(strm~numTargets)
+g<-ggplot(dl, aes(x=strm,color=(numTargets),y=corr)) + facet_grid(SOA~numTargets)
 g<-g+ stat_summary(geom="point",fun.y=mean) +
   stat_summary(fun.data="mean_cl_boot",geom="errorbar",width=.3,conf.int=.95) #, width=5,size=1) 
 show(g)
