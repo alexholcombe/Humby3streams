@@ -24,7 +24,7 @@ Get proper filename with path
 
 ```{r}
 rawDataPath<- "../rawData/pilotJen1"
-dataFileName<- "Hubert_14Jun2018_15-24_150soams.txt" # "auto_14Jun2018_15-04.txt"
+dataFileName<- "Pilot3_22Jun2018_14-01.txt" # "auto_14Jun2018_15-04.txt"
 fileWithPath<- file.path(rawDataPath,dataFileName)
 ```
 
@@ -35,6 +35,14 @@ df <-read_tsv(fileWithPath)  #read_tsv from tidyverse readr has advantage of not
 #in subject and another column
 head(df)
 ```
+
+Verify some counterbalancing
+```{r}
+table(df$task)
+
+table(df$task,df$whichStreamEachCue)
+
+````
 
 Define function to add columns calculating variables we need to know
 
@@ -86,8 +94,8 @@ Analyse all the pilot files, with different SOAs
 ```{r}
 
 #files <- dir(path=rawDataPath,pattern='.txt')  #find all data files in this directory
-files<- c("Hubert_14Jun2018_15-24_150soams.txt","Hubert_14Jun2018_15-45_130soams.txt","Hubert_14Jun2018_15-56_140soams.txt")
-SOA<- c(150,130,140)
+files<- c("Hubert_14Jun2018_15-24_150soams.txt","Hubert_14Jun2018_15-45_130soams.txt","Hubert_14Jun2018_15-56_140soams.txt","Pilot3_22Jun2018_14-01.txt")
+SOA<- c(150,130,140,150)
 
 dfAll<-data.frame()
 for (i in 1:length(files)) { #read in each file
@@ -125,7 +133,7 @@ Add columns and show summary proportion correct
 dfAll<-addMyColumns(dfAll)
 write_excel_csv(dfAll,"dfAll.csv")
 
-dfAll %>% group_by(SOA,numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+dfAll %>% group_by(SOA,numTargets,subject) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
 ```
 
 Convert data stream correct from wide to long format, and print a bit to verify it worked.
