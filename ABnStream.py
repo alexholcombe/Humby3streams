@@ -49,7 +49,7 @@ refreshRate = 60
 if demo:
     refreshRate = 60.;  #100 LN: refresh rate for previous AB and RSVP task for gamers was 60
 
-font = 'sloan'
+myFont = 'sloan'
 staircaseTrials = 25
 prefaceStaircaseTrialsN = 20 #22
 prefaceStaircaseNoise = np.array([5,20,20,20, 50,50,50,5,80,80,80,5,95,95,95]) #will be recycled / not all used, as needed
@@ -62,8 +62,8 @@ if cueType == 'endogenous':
 letterColor = [1.,1.,1.]
 cueRadius = 1 #6 deg, as in Martini E2    Letters should have height of 2.5 deg
 
-widthPix= 1024 #monitor width in pixels of Agosta
-heightPix= 768 #800 #monitor height in pixels
+widthPix= 800 #monitor width in pixels of Agosta
+heightPix= 600 #800 #monitor height in pixels
 monitorwidth = 40.5 #monitor width in cm
 scrn=0 #0 to use main screen, 1 to use external screen connected to computer
 fullscr=False #True to use fullscreen, False to not. Timing probably won't be quite right if fullscreen = False
@@ -203,7 +203,7 @@ if refreshRateWrong:
 else: logging.info(refreshMsg1+refreshMsg2)
 
 if checkRefreshEtc and (not demo) and (myWinRes != [widthPix,heightPix]).any():
-    msgWrongResolution = 'Screen apparently NOT the desired resolution of '+ str(widthPix)+'x'+str(heightPix)+ ' pixels!!'
+    msgWrongResolution = 'Screen apparently NOT the desired resolution of '+ str(widthPix)+'x'+str(heightPix)+ ' pixels!\n instead' +str(myWinRes)
     myDlg.addText(msgWrongResolution, color='Red')
     logging.error(msgWrongResolution)
     print(msgWrongResolution)
@@ -293,7 +293,6 @@ fixatnPtSize = 4
 if exportImages: fixColor= [0,0,0]
 fixatnTextureWidth = np.round(fixSizePix/4).astype(int)
 fixatnNoiseTexture = np.round( np.random.rand(fixatnTextureWidth,fixatnTextureWidth) ,0 )   *2.0-1 #Can counterphase flicker  noise texture to create salient flicker if you break fixation
-
 fixatn= visual.PatchStim(myWin, tex=fixatnNoiseTexture, size=(fixSizePix,fixSizePix), units='pix', mask='circle', interpolate=False, autoLog=False)
 fixatnCounterphase= visual.PatchStim(myWin, tex= -1*fixatnNoiseTexture, size=(fixSizePix,fixSizePix), units='pix', mask='circle', interpolate=False, autoLog=False) #reverse contrast
 fixatnPoint= visual.Circle(myWin,fillColorSpace='rgb',fillColor=(1,1,1),radius=fixatnPtSize,pos=[0,0],units='pix',autoLog=autoLogging)
@@ -356,19 +355,18 @@ for streamsPerRing in streamsPerRingPossibilities:
        #setting targetLeftRightIfOne constant because which stream randomisation taken care of by baseAngle. Stream0 will always be the one cued, but it'll be in a random position
        for targetLeftRightIfOne in ['left']:  # ['left','right']: #If single target, should it be on the left or the right?
         for cueTemporalPos in possibleCueTemporalPositions:
-            for firstRespLRifTwo in ['left','right']:  #If dual target and lineup response, should left one or right one be queried first?
                 #Jen's experiment response order is counterbalanced by the whichStreamEachCue possibilties below
                 if task == 'allCued':
                     for whichStreamEachCue in [ [0,1,2], [0,2,1],  [1,0,2],[1,2,0],   [2,0,1], [2,1,0] ]:
                         stimList.append(         
                              {'numRings':numRings, 'streamsPerRing':streamsPerRing, 'numRespsWanted':numResponsesWanted, 'task':task, 'targetLeftRightIfOne':targetLeftRightIfOne, 
-                                'cue0temporalPos':cueTemporalPos, 'firstRespLRifTwo': firstRespLRifTwo, 'cue1lag':0,'numToCue':numToCue, 'whichStreamEachCue': whichStreamEachCue} 
+                                'cue0temporalPos':cueTemporalPos, 'cue1lag':0,'numToCue':numToCue, 'whichStreamEachCue': whichStreamEachCue} 
                           )  #cue1lag = 0, meaning simultaneous targets
                 elif task =='twoCued':
                     for whichStreamEachCue in [ [0,1], [0,2], [1,2],  [1,0], [2,0], [2,1] ]:
                         stimList.append(
                              {'numRings':numRings, 'streamsPerRing':streamsPerRing, 'numRespsWanted':numResponsesWanted, 'task':task, 'targetLeftRightIfOne':targetLeftRightIfOne, 
-                                'cue0temporalPos':cueTemporalPos, 'firstRespLRifTwo': firstRespLRifTwo, 'cue1lag':0,'numToCue':numToCue, 'whichStreamEachCue': whichStreamEachCue} 
+                                'cue0temporalPos':cueTemporalPos, 'cue1lag':0,'numToCue':numToCue, 'whichStreamEachCue': whichStreamEachCue} 
                           )  #cue1lag = 0, meaning simultaneous targets
                           
 trialsPerCondition= 2
@@ -538,7 +536,7 @@ for streami in xrange(maxStreams):
     #print('thisRingNum = ',thisRingNum,'streamsPerRing=',streamsPerRing, ' ltrHeightThis=',ltrHeightThis)
     for i in range(0,26):
         if i not in bannedLtrs:
-            ltr = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb', font = font, color=letterColor,alignHoriz='center',alignVert='center',units='deg',autoLog=autoLogging)
+            ltr = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb', font = myFont, color=letterColor,alignHoriz='center',alignVert='center',units='deg',autoLog=autoLogging)
             ltr.setHeight( ltrHeightThis )      
             letter = numberToLetter(i)
             ltr.setText(letter,log=False)
