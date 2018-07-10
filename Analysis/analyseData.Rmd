@@ -1,5 +1,5 @@
 ---
-title: "Analyze pilot data for Jen"
+title: "Analyze  data for Jen"
 author: "Alex Holcombe"
 date: "`r Sys.Date()`"
 output:
@@ -20,29 +20,15 @@ knitr::opts_chunk$set(
 )
 ```
 
-Get proper filename with path
+Get proper path
 
 ```{r}
 rawDataPath<- "../rawData/pilotJen1"
-dataFileName<- "Pilot3_22Jun2018_14-01.txt" # "auto_14Jun2018_15-04.txt"
-fileWithPath<- file.path(rawDataPath,dataFileName)
 ```
 
-Example reading in that one file
 ```{r}
 library('readr')#install.packages('readr')
-df <-read_tsv(fileWithPath)  #read_tsv from tidyverse readr has advantage of not having padding spaces
-#in subject and another column
-head(df)
 ```
-
-Verify some counterbalancing
-```{r}
-table(df$task)
-
-table(df$task,df$whichStreamEachCue)
-
-````
 
 Define function to add columns calculating variables we need to know
 
@@ -76,44 +62,21 @@ addMyColumns<- function(df) {
   df<-df %>% mutate(pCorrAll = case_when(numTargets == 2 ~ (corrResp0 + corrResp1) / 2,
                                          numTargets == 3 ~ (corrResp0+corrResp1+corrResp2) / 3,
                                          TRUE ~ -900))
-  return (df)
-}
-dg<-addMyColumns(df)
-dg <- dg %>% mutate(whichStreamsCued = case_when(whichStreamEachCue == "[0, 1]" | whichStreamEachCue =="[1, 0]" ~ "LM",
+  
+  df <- df %>% mutate(whichStreamsCued = case_when(whichStreamEachCue == "[0, 1]" | whichStreamEachCue =="[1, 0]" ~ "LM",
                                                  whichStreamEachCue == "[0, 2]" | whichStreamEachCue =="[2, 0]" ~ "LR",
                                                  whichStreamEachCue == "[1, 2]" | whichStreamEachCue =="[2, 1]" ~ "MR",
                                                  TRUE ~ "LMR") )
+  return (df)
+}
                                                  
 ```
 
-Sanity check a bit
-```{r}
-table(dg$pCorrAll,dg$numTargets)
-```
 
-Print some results summaries
-```{r}
-#Calculate mean performance by conditions
-summaryResults1<- dg %>% group_by(numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
-
-summaryResults2<- dg %>% group_by(numTargets,whichStreamEachCue) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
-
-summaryResults3<- dg %>% group_by(numTargets,whichStreamsCued) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
-
-```
-
-```{r}
-#saveRDS(summaryResults3,"summaryBy)
-write_excel_csv(summaryResults3,"summaryByNumtargetsWhichStreamsCued.csv")
-
-```
-
-Analyse all the pilot files, with different SOAs
+Analyse all the files
 ```{r}
 
-#files <- dir(path=rawDataPath,pattern='.txt')  #find all data files in this directory
-files<- c("Hubert_14Jun2018_15-24_150soams.txt","Hubert_14Jun2018_15-45_130soams.txt","Hubert_14Jun2018_15-56_140soams.txt","Pilot3_22Jun2018_14-01.txt")
-SOA<- c(150,130,140,150)
+files <- dir(path=rawDataPath,pattern='.txt')  #find all data files in this directory
 
 dfAll<-data.frame()
 for (i in 1:length(files)) { #read in each file
@@ -123,6 +86,7 @@ for (i in 1:length(files)) { #read in each file
     error=function(e) {
       stop( paste0("ERROR reading the file ",fileThis," :",e) )
     } )
+  #Checks the subject name inside for consistency with the name in the filename
   apparentSubjectName <- strsplit(files[i],split="_")[[1]][1]
   subjectName<- rawDataLoad$subject[[1]]
   if (apparentSubjectName != subjectName) {
@@ -132,7 +96,6 @@ for (i in 1:length(files)) { #read in each file
   else { cat(paste0(' Subject ',apparentSubjectName,' read in')) }
   rawDataLoad$file <- files[i]
   
-  rawDataLoad$SOA<- SOA[i]
   #Eventually, try to integrate with eye movements file here
   
   tryCatch(
@@ -142,7 +105,7 @@ for (i in 1:length(files)) { #read in each file
     } )
 }
 
-table(dfAll$subject,dfAll$SOA)
+table(dfAll$subject)
 
 ```
 
@@ -150,8 +113,31 @@ Add columns and show summary proportion correct
 ```{r}
 dfAll<-addMyColumns(dfAll)
 write_excel_csv(dfAll,"dfAll.csv")
+```
 
-dfAll %>% group_by(SOA,numTargets,subject) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+```{r}
+#Calculate mean performance by conditions
+summaryResults1<- dfAll %>% group_by(numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+summaryResults2<- dfAll %>% group_by(numTargets,whichStreamEachCue) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+summaryResults3<- dfAll %>% group_by(numTargets,whichStreamsCued) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+dfAll %>% group_by(numTargets,subject) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+```
+
+```{r}
+#Calculate mean performance by conditions by subject
+summaryResults1<- dfAll %>% group_by(numTargets) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+summaryResults2<- dfAll %>% group_by(numTargets,whichStreamEachCue) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+summaryResults3<- dfAll %>% group_by(subject,numTargets,whichStreamsCued) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+summaryResults4<- dfAll %>% group_by(numTargets,whichStreamsCued,subject) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
+dfAll %>% group_by(numTargets,subject) %>% summarise_at(vars(corrStrm0:corrStrm2), mean, na.rm=TRUE)
+
 ```
 
 Convert data stream correct from wide to long format, and print a bit to verify it worked.
