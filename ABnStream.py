@@ -43,13 +43,13 @@ else:
 timeAndDateStr = time.strftime("%d%b%Y_%H-%M", time.localtime())
 
 showRefreshMisses=True #flicker fixation at refresh rate, to visualize if frames missed
-feedback=True
+feedback=False
 autoLogging=False
 refreshRate = 60
 if demo:
     refreshRate = 60.;  #100 LN: refresh rate for previous AB and RSVP task for gamers was 60
 
-myFont = 'sloan'
+font = 'arial'
 staircaseTrials = 25
 prefaceStaircaseTrialsN = 20 #22
 prefaceStaircaseNoise = np.array([5,20,20,20, 50,50,50,5,80,80,80,5,95,95,95]) #will be recycled / not all used, as needed
@@ -108,7 +108,7 @@ if quitFinder:
 #letter size 2.5 deg
 numLettersToPresent = 24
 #For AB, minimum SOAms should be 84  because any shorter, I can't always notice the second ring when lag1.   71 in Martini E2 and E1b (actually he used 66.6 but that's because he had a crazy refresh rate of 90 Hz)
-SOAms = 82# 400 #82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
+SOAms = 150# 400 #82.35 # Battelli, Agosta, Goodbourn, Holcombe mostly using 133
 letterDurMs = 60 #60
 
 ISIms = SOAms - letterDurMs
@@ -130,6 +130,7 @@ def openMyStimWindow(): #make it a function because have to do it several times,
     myWin = visual.Window(monitor=mon,size=(widthPix,heightPix),allowGUI=allowGUI,units=units,color=bgColor,colorSpace='rgb',fullscr=fullscr,screen=scrn,waitBlanking=waitBlank,
                    winType='pyglet' ) #pygame doesn't work, don't know why. Works in textLocationTest.py
     return myWin
+print('trying to open window with res', widthPix, heightPix)
 myWin = openMyStimWindow()
 
 refreshMsg2 = ''
@@ -248,12 +249,8 @@ if doStaircase:
 fileName = os.path.join(dataDir, subject + '_' + infix+ timeAndDateStr)
 if not demo and not exportImages:
     dataFile = open(fileName+'.txt', 'w')
-    #save a copy of the code as it was when that subject was run
-    thisScriptName = sys.argv[0]
-    scriptDestination = os.path.join(fileName + '.py')
-    #print('thisScriptName=', thisScriptName, 'scriptDestination=',scriptDestination)
-    shutil.copyfile(thisScriptName, scriptDestination)
-    
+    saveCodeCmd = 'cp \'' + sys.argv[0] + '\' '+ fileName + '.py'
+    os.system(saveCodeCmd)  #save a copy of the code as it was when that subject was run
     logFname = fileName+'.log'
     ppLogF = logging.LogFile(logFname, 
         filemode='w',#if you set this to 'a' it will append instead of overwriting
@@ -297,6 +294,7 @@ fixatnPtSize = 4
 if exportImages: fixColor= [0,0,0]
 fixatnTextureWidth = np.round(fixSizePix/4).astype(int)
 fixatnNoiseTexture = np.round( np.random.rand(fixatnTextureWidth,fixatnTextureWidth) ,0 )   *2.0-1 #Can counterphase flicker  noise texture to create salient flicker if you break fixation
+
 fixatn= visual.PatchStim(myWin, tex=fixatnNoiseTexture, size=(fixSizePix,fixSizePix), units='pix', mask='circle', interpolate=False, autoLog=False)
 fixatnCounterphase= visual.PatchStim(myWin, tex= -1*fixatnNoiseTexture, size=(fixSizePix,fixSizePix), units='pix', mask='circle', interpolate=False, autoLog=False) #reverse contrast
 fixatnPoint= visual.Circle(myWin,fillColorSpace='rgb',fillColor=(1,1,1),radius=fixatnPtSize,pos=[0,0],units='pix',autoLog=autoLogging)
@@ -374,8 +372,9 @@ for streamsPerRing in streamsPerRingPossibilities:
                           )  #cue1lag = 0, meaning simultaneous targets
                           
 trialsPerCondition= 2
+print('Have set up the conditions')
 trials = data.TrialHandler(stimList,trialsPerCondition) #constant stimuli method
-
+print('Have created the trials')
 logging.info( ' each trialDurFrames='+str(trialDurFrames)+' or '+str(trialDurFrames*(1000./refreshRate))+ \
                ' ms' )
 
@@ -540,7 +539,7 @@ for streami in xrange(maxStreams):
     #print('thisRingNum = ',thisRingNum,'streamsPerRing=',streamsPerRing, ' ltrHeightThis=',ltrHeightThis)
     for i in range(0,26):
         if i not in bannedLtrs:
-            ltr = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb', font = myFont, color=letterColor,alignHoriz='center',alignVert='center',units='deg',autoLog=autoLogging)
+            ltr = visual.TextStim(myWin,pos=(0,0),colorSpace='rgb', font = font, color=letterColor,alignHoriz='center',alignVert='center',units='deg',autoLog=autoLogging)
             ltr.setHeight( ltrHeightThis )      
             letter = numberToLetter(i)
             ltr.setText(letter,log=False)
@@ -1083,7 +1082,7 @@ while nDone < totalTrials and expStop==False:
         
         dataFile.flush(); logging.flush()
         print('nDone=', nDone,' trials.nTotal=',trials.nTotal) #' trials.thisN=',trials.thisN
-        pctTrialsCompletedForBreak = np.array([.6,.8])  
+        pctTrialsCompletedForBreak = np.array([1.5])  
         breakTrials = np.round(trials.nTotal*pctTrialsCompletedForBreak)
         timeForTrialsRemainingMsg = np.any(trials.thisN==breakTrials)
         if timeForTrialsRemainingMsg :
