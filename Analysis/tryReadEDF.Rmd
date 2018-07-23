@@ -1,0 +1,38 @@
+---
+title: "readEDF"
+author: "Alex Holcombe"
+date: "7/16/2018"
+output: html_document
+---
+
+https://github.com/dahtah/eyelinker
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r cars}
+#install.packages("eyelinker")
+library(devtools)
+install_github('jashubbard/edfR')
+#library(eyelinker)
+```
+
+## Try it out
+
+
+
+```{r try, echo=FALSE}
+library(eyelinker)
+#Example file from SR research that ships with the package
+fpath <- system.file("extdata/mono500.asc.gz",package="eyelinker")
+dat <- read.asc(fpath)
+plot(dat$raw$time,dat$raw$xp,xlab="Time (ms)",ylab="Eye position along x axis (pix)")
+#For more info:
+vignette("basics",package="eyelinker")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
