@@ -47,3 +47,7 @@ Needs to be out of 6 to counterbalance both 3 and 2-target conditions
 - Only working now for 3 streams, lot of vestigial nonworking code for fewer/more streams
 
 - whichStreamEachResp (and also whichRespEachCue) is set up by doRSVPstim
+
+### Eyetracking ##
+
+It looks like ultimately, Jen did the eyetracking analysis on her own in Excel, after creating fixation reports with Eyelink Data Viewer.
